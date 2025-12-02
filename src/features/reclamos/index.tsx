@@ -1,4 +1,4 @@
-import { getRouteApi } from '@tanstack/react-router'
+import { getRouteApi, Outlet, useLocation } from '@tanstack/react-router'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ThemeSwitch } from '@/components/theme-switch'
@@ -20,6 +20,10 @@ export function Reclamos() {
   const { auth } = useAuthStore()
   const isClient = auth.hasRole('Cliente')
   const isManager = auth.hasRole(['Encargado', 'Gerente'])
+  const location = useLocation()
+  
+  // Check if we're on a child route (like encuesta)
+  const hasChildRoute = location.pathname.includes('/encuesta')
 
   const { data: reclamosResponse, error, isLoading } = useQuery({
     queryKey: ['reclamos', search],
@@ -51,6 +55,15 @@ export function Reclamos() {
 
   const handleRefresh = () => {
     queryClient.invalidateQueries({ queryKey: ['reclamos'] })
+  }
+
+  // If there's a child route, render only the Outlet
+  if (hasChildRoute) {
+    return (
+      <ReclamosProvider>
+        <Outlet />
+      </ReclamosProvider>
+    )
   }
 
   return (

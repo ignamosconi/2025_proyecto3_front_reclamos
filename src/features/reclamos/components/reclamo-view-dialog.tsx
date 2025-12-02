@@ -16,9 +16,15 @@ import { type Reclamo } from '../data/schema'
 import { ReclamoSynthesisList } from './reclamo-synthesis-list'
 import { ReclamoImagesList } from './reclamo-images-list'
 import { ReclamoHistorialTimeline } from './reclamo-historial-timeline'
+import { EncuestaDisplay } from '@/features/encuesta/components/encuesta-display'
+import { EncuestaForm } from '@/features/encuesta/components/encuesta-form'
 import { useReclamos } from './reclamos-provider'
 import { useAuthStore } from '@/stores/auth-store'
 import { Settings, GitBranch } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
+import { encuestaService } from '@/services/encuesta/encuesta.service'
+import { useQueryClient } from '@tanstack/react-query'
+import { useNavigate } from '@tanstack/react-router'
 
 type ReclamoViewDialogProps = {
   currentRow: Reclamo
@@ -33,8 +39,18 @@ export function ReclamoViewDialog({
 }: ReclamoViewDialogProps) {
   const { setOpen } = useReclamos()
   const { auth } = useAuthStore()
+  const queryClient = useQueryClient()
+  const navigate = useNavigate()
   const isStaff = auth.hasRole(['Encargado', 'Gerente'])
+  const isClient = auth.hasRole('Cliente')
   const isFinalState = currentRow.estado === EstadoReclamo.RESUELTO || currentRow.estado === EstadoReclamo.RECHAZADO
+
+  // Fetch survey if claim is in final state
+  const { data: encuesta, isLoading: isLoadingEncuesta } = useQuery({
+    queryKey: ['encuesta', currentRow._id],
+    queryFn: () => encuestaService.getByReclamoId(currentRow._id),
+    enabled: open && isFinalState,
+  })
 
   const handleChangeState = () => {
     setOpen('change-state')
@@ -42,6 +58,16 @@ export function ReclamoViewDialog({
 
   const handleReassignArea = () => {
     setOpen('reassign-area')
+  }
+
+  const handleSurveySuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ['encuesta', currentRow._id] })
+    queryClient.invalidateQueries({ queryKey: ['reclamos'] })
+  }
+
+  const handleCompleteSurvey = () => {
+    navigate({ to: '/reclamos/$reclamoId/encuesta', params: { reclamoId: currentRow._id } })
+    onOpenChange(false)
   }
 
   return (
@@ -81,11 +107,12 @@ export function ReclamoViewDialog({
         </DialogHeader>
         
         <Tabs defaultValue='details' className='w-full'>
-          <TabsList className='grid w-full grid-cols-4'>
+          <TabsList className={`grid w-full ${isFinalState ? 'grid-cols-5' : 'grid-cols-4'}`}>
             <TabsTrigger value='details'>Detalles</TabsTrigger>
             <TabsTrigger value='images'>Imágenes</TabsTrigger>
             <TabsTrigger value='synthesis'>Síntesis</TabsTrigger>
             <TabsTrigger value='historial'>Historial</TabsTrigger>
+            {isFinalState && <TabsTrigger value='encuesta'>Encuesta</TabsTrigger>}
           </TabsList>
           
           <TabsContent value='details' className='space-y-4 mt-4'>
@@ -150,6 +177,29 @@ export function ReclamoViewDialog({
           <TabsContent value='historial' className='mt-4'>
             <ReclamoHistorialTimeline reclamoId={currentRow._id} />
           </TabsContent>
+
+          {isFinalState && (
+            <TabsContent value='encuesta' className='mt-4'>
+              {isLoadingEncuesta ? (
+                <div className='text-sm text-muted-foreground'>Cargando encuesta...</div>
+              ) : encuesta ? (
+                <EncuestaDisplay reclamoId={currentRow._id} />
+              ) : isClient && auth.user?.id && (typeof currentRow.fkCliente === 'string' ? currentRow.fkCliente : (currentRow.fkCliente as any)?._id || (currentRow.fkCliente as any)?.id) === auth.user.id ? (
+                <div className='space-y-4'>
+                  <div className='text-sm text-muted-foreground'>
+                    Aún no has completado la encuesta de satisfacción para este reclamo.
+                  </div>
+                  <Button onClick={handleCompleteSurvey} className='w-full sm:w-auto'>
+                    Completar Encuesta
+                  </Button>
+                </div>
+              ) : (
+                <div className='text-sm text-muted-foreground'>
+                  La encuesta aún no ha sido completada por el cliente.
+                </div>
+              )}
+            </TabsContent>
+          )}
         </Tabs>
       </DialogContent>
     </Dialog>

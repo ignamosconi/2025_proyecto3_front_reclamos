@@ -79,6 +79,12 @@ export const HISTORIAL_ENDPOINTS = {
   ADD_COMENTARIO: (reclamoId: string) => `${API_BASE_URL}/historial/${reclamoId}/comentario`,
 }
 
+// Endpoints de encuestas
+export const ENCUESTA_ENDPOINTS = {
+  CREATE: (reclamoId: string) => `${API_BASE_URL}/reclamos/${reclamoId}/encuesta`,
+  GET_BY_RECLAMO: (reclamoId: string) => `${API_BASE_URL}/reclamos/${reclamoId}/encuesta`,
+}
+
 // Función auxiliar para crear URLs con parámetros de consulta
 export const buildQueryParams = (
   baseUrl: string,
