@@ -9,21 +9,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
-import { useMarcas } from '@/hooks/use-marcas'
 import { useCallback } from 'react'
 
 export interface DashboardFilters {
   dateFrom?: Date
   dateTo?: Date
-  marcaId?: number
 }
 
 interface DashboardFiltersProps {
@@ -32,8 +23,6 @@ interface DashboardFiltersProps {
 }
 
 export function DashboardFiltersComponent({ filters, onFiltersChange }: DashboardFiltersProps) {
-  const { data: marcas } = useMarcas()
-
   const handleDateFromChange = useCallback((date: Date | undefined) => {
     onFiltersChange({ ...filters, dateFrom: date })
   }, [filters, onFiltersChange])
@@ -42,18 +31,11 @@ export function DashboardFiltersComponent({ filters, onFiltersChange }: Dashboar
     onFiltersChange({ ...filters, dateTo: date })
   }, [filters, onFiltersChange])
 
-  const handleMarcaChange = useCallback((value: string) => {
-    onFiltersChange({ 
-      ...filters, 
-      marcaId: value === 'all' ? undefined : Number(value) 
-    })
-  }, [filters, onFiltersChange])
-
   const handleClearFilters = useCallback(() => {
     onFiltersChange({})
   }, [onFiltersChange])
 
-  const hasActiveFilters = filters.dateFrom || filters.dateTo || filters.marcaId
+  const hasActiveFilters = filters.dateFrom || filters.dateTo
 
   return (
     <div className="space-y-4 rounded-lg border p-4">
@@ -71,7 +53,7 @@ export function DashboardFiltersComponent({ filters, onFiltersChange }: Dashboar
         )}
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2">
         {/* Fecha Desde */}
         <div className="space-y-2">
           <Label htmlFor="date-from">Fecha desde</Label>
@@ -137,28 +119,6 @@ export function DashboardFiltersComponent({ filters, onFiltersChange }: Dashboar
             </PopoverContent>
           </Popover>
         </div>
-
-        {/* Marca */}
-        <div className="space-y-2">
-          <Label htmlFor="marca">Marca</Label>
-          <Select
-            value={filters.marcaId?.toString() || 'all'}
-            onValueChange={handleMarcaChange}
-          >
-            <SelectTrigger id="marca" className='w-full'>
-              <SelectValue placeholder="Todas" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas</SelectItem>
-              {marcas?.map((marca: any) => (
-                <SelectItem key={marca.id} value={marca.id.toString()}>
-                  {marca.nombre}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
       </div>
     </div>
   )

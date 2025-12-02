@@ -24,7 +24,6 @@ export function Dashboard() {
   const stableFilters = useMemo(() => filters, [
     filters.dateFrom,
     filters.dateTo,
-    filters.marcaId,
   ])
   
   const { data: stats, isLoading: statsLoading } = useDashboardStats(stableFilters)

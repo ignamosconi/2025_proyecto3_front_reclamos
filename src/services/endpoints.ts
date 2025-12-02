@@ -37,18 +37,6 @@ export const AREAS_ENDPOINTS = {
   DELETE: (id: string) => `${API_BASE_URL}/area-reclamo/${id}`,
 }
 
-// Endpoints de catalogo
-export const CATALOG_ENDPOINTS = {
-  BRANDS_ENDPOINTS: {
-    GET_ALL: `${API_BASE_URL}/marcas`,
-    GET_BY_ID: (id: string) => `${API_BASE_URL}/marcas/${id}`,
-    UPDATE: (id: string) => `${API_BASE_URL}/marcas/${id}`,
-    DELETE: (id: string) => `${API_BASE_URL}/marcas/${id}`,
-    CREATE: `${API_BASE_URL}/marcas`,
-  },
-}
-
-
 // Endpoints de tipos de reclamos
 export const TIPO_RECLAMO_ENDPOINTS = {
   GET_ALL: `${API_BASE_URL}/tipo-reclamo`,

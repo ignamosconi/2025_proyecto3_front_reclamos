@@ -2,7 +2,6 @@ import {
   LayoutDashboard,
   Users,
   Command,
-  Tag,
   FileText,
   FolderTree,
   AlertCircle,
@@ -58,16 +57,6 @@ export const sidebarData: SidebarData = {
           icon: FolderKanban,
         }
       ],
-    },
-    {
-      title: 'Catalogo',
-      items: [
-        {
-          title: 'Marcas',
-          url: '/brands',
-          icon: Tag,
-        }
-      ]
     }
   ],
 }

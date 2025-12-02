@@ -29,9 +29,6 @@ export const dashboardService = {
   filterVentas(ventas: any[], filters?: {
     dateFrom?: Date;
     dateTo?: Date;
-    proveedorId?: number;
-    marcaId?: number;
-    lineaId?: number;
   }): any[] {
     if (!filters) return ventas;
 
@@ -48,64 +45,6 @@ export const dashboardService = {
         return false;
       }
       
-      // Filtro por proveedor, marca o línea
-      if (filters.proveedorId || filters.marcaId || filters.lineaId) {
-        // Verificar en los detalles de venta si algún producto cumple los criterios
-        const matchesFilter = venta.detalles?.some((detalle: any) => {
-          // Intentar obtener el producto del detalle
-          const producto = detalle.producto;
-          
-          // Si no hay producto pero tenemos idProducto, no podemos filtrar por proveedor/marca/línea
-          if (!producto) {
-            console.warn('⚠️ Detalle de venta sin información de producto completa. Se necesita reiniciar el backend.');
-            return false;
-          }
-          
-          // Filtro por proveedor
-          if (filters.proveedorId) {
-            // Verificar si el producto tiene proveedores
-            if (!producto.proveedores || !Array.isArray(producto.proveedores)) {
-              console.warn('⚠️ Producto sin información de proveedores. ID Producto:', producto.idProducto);
-              return false;
-            }
-            
-            const hasProveedor = producto.proveedores.some(
-              (pp: any) => {
-                // Manejar diferentes estructuras de datos
-                const proveedorId = pp.proveedor?.idProveedor || pp.idProveedor;
-                return proveedorId === filters.proveedorId;
-              }
-            );
-            
-            if (!hasProveedor) return false;
-          }
-          
-          // Filtro por marca
-          if (filters.marcaId) {
-            if (!producto.idMarca && !producto.marca?.id) {
-              console.warn('⚠️ Producto sin información de marca. ID Producto:', producto.idProducto);
-              return false;
-            }
-            const marcaId = producto.idMarca || producto.marca?.id;
-            if (marcaId !== filters.marcaId) return false;
-          }
-          
-          // Filtro por línea
-          if (filters.lineaId) {
-            if (!producto.idLinea && !producto.linea?.id) {
-              console.warn('⚠️ Producto sin información de línea. ID Producto:', producto.idProducto);
-              return false;
-            }
-            const lineaId = producto.idLinea || producto.linea?.id;
-            if (lineaId !== filters.lineaId) return false;
-          }
-          
-          return true;
-        });
-        
-        if (!matchesFilter) return false;
-      }
-      
       return true;
     });
   },
@@ -114,9 +53,6 @@ export const dashboardService = {
   async getStats(filters?: {
     dateFrom?: Date;
     dateTo?: Date;
-    proveedorId?: number;
-    marcaId?: number;
-    lineaId?: number;
   }): Promise<DashboardStats> {
     const response = await api.get('/ventas');
     let ventas = response.data;
@@ -169,9 +105,6 @@ export const dashboardService = {
   async getMonthlySales(filters?: {
     dateFrom?: Date;
     dateTo?: Date;
-    proveedorId?: number;
-    marcaId?: number;
-    lineaId?: number;
   }): Promise<MonthlySales[]> {
     const response = await api.get('/ventas');
     let ventas = response.data;
@@ -209,9 +142,6 @@ export const dashboardService = {
   async getRecentSales(limit: number = 5, filters?: {
     dateFrom?: Date;
     dateTo?: Date;
-    proveedorId?: number;
-    marcaId?: number;
-    lineaId?: number;
   }): Promise<RecentSale[]> {
     const response = await api.get('/ventas');
     let ventas = response.data;
