@@ -56,7 +56,7 @@ export const RECLAMOS_ENDPOINTS = {
   UPDATE: (id: string) => `${API_BASE_URL}/reclamos/${id}`,
   DELETE: (id: string) => `${API_BASE_URL}/reclamos/${id}`,
   CHANGE_STATE: (id: string) => `${API_BASE_URL}/reclamos/${id}/estado`,
-  UPDATE_AREA: (id: string) => `${API_BASE_URL}/reclamos/${id}/area`,
+  REASSIGN_AREA: (id: string, nuevaAreaId: string) => `${API_BASE_URL}/reclamos/${id}/reassign-area/${nuevaAreaId}`,
   GET_SYNTHESIS: (reclamoId: string) =>
     `${API_BASE_URL}/reclamos/${reclamoId}/sintesis`,
   GET_SYNTHESIS_BY_ID: (reclamoId: string, sintesisId: string) =>

@@ -4,7 +4,7 @@ import React from 'react'
 import useDialogState from '@/hooks/use-dialog-state'
 import { type Reclamo } from '../data/schema'
 
-type ReclamoDialogType = 'add' | 'edit' | 'delete' | 'view' | 'change-state'
+type ReclamoDialogType = 'add' | 'edit' | 'delete' | 'view' | 'change-state' | 'reassign-area'
 
 type ReclamoContextType = {
   open: ReclamoDialogType | null

@@ -17,7 +17,7 @@ import { ReclamoSynthesisList } from './reclamo-synthesis-list'
 import { ReclamoImagesList } from './reclamo-images-list'
 import { useReclamos } from './reclamos-provider'
 import { useAuthStore } from '@/stores/auth-store'
-import { Settings } from 'lucide-react'
+import { Settings, GitBranch } from 'lucide-react'
 
 type ReclamoViewDialogProps = {
   currentRow: Reclamo
@@ -32,11 +32,15 @@ export function ReclamoViewDialog({
 }: ReclamoViewDialogProps) {
   const { setOpen } = useReclamos()
   const { auth } = useAuthStore()
-  const isManager = auth.hasRole(['Encargado', 'Gerente'])
+  const isStaff = auth.hasRole(['Encargado', 'Gerente'])
   const isFinalState = currentRow.estado === EstadoReclamo.RESUELTO || currentRow.estado === EstadoReclamo.RECHAZADO
 
   const handleChangeState = () => {
     setOpen('change-state')
+  }
+
+  const handleReassignArea = () => {
+    setOpen('reassign-area')
   }
 
   return (
@@ -50,16 +54,27 @@ export function ReclamoViewDialog({
                 Detalles del reclamo
               </DialogDescription>
             </div>
-            {isManager && !isFinalState && (
-              <Button
-                variant='outline'
-                size='sm'
-                onClick={handleChangeState}
-                className='gap-2'
-              >
-                <Settings className='h-4 w-4' />
-                Cambiar estado
-              </Button>
+            {isStaff && !isFinalState && (
+              <div className='flex gap-2'>
+                <Button
+                  variant='outline'
+                  size='sm'
+                  onClick={handleReassignArea}
+                  className='gap-2'
+                >
+                  <GitBranch className='h-4 w-4' />
+                  Reasignar área
+                </Button>
+                <Button
+                  variant='outline'
+                  size='sm'
+                  onClick={handleChangeState}
+                  className='gap-2'
+                >
+                  <Settings className='h-4 w-4' />
+                  Cambiar estado
+                </Button>
+              </div>
             )}
           </div>
         </DialogHeader>

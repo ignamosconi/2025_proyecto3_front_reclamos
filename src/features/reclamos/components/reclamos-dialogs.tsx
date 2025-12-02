@@ -3,6 +3,7 @@ import { ReclamoEditDialog } from './reclamo-edit-dialog'
 import { ReclamoDeleteDialog } from './reclamo-delete-dialog'
 import { ReclamoViewDialog } from './reclamo-view-dialog'
 import { ReclamoChangeStateDialog } from './reclamo-change-state-dialog'
+import { ReclamoReassignAreaDialog } from './reclamo-reassign-area-dialog'
 import { useReclamos } from './reclamos-provider'
 
 type ReclamosDialogsProps = {
@@ -71,6 +72,21 @@ export function ReclamosDialogs({ onSuccess }: ReclamosDialogsProps) {
           <ReclamoChangeStateDialog
             key={`reclamo-change-state-${currentRow._id}`}
             open={open === 'change-state'}
+            onOpenChange={(state) => {
+              if (!state) {
+                setOpen(null)
+                setTimeout(() => {
+                  setCurrentRow(null)
+                }, 500)
+              }
+            }}
+            currentRow={currentRow}
+            onSuccess={onSuccess}
+          />
+
+          <ReclamoReassignAreaDialog
+            key={`reclamo-reassign-area-${currentRow._id}`}
+            open={open === 'reassign-area'}
             onOpenChange={(state) => {
               if (!state) {
                 setOpen(null)

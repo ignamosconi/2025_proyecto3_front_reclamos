@@ -67,10 +67,6 @@ export interface ChangeStateDto {
   nombre?: string;
 }
 
-export interface UpdateAreaDto {
-  fkArea: string;
-}
-
 export interface CreadorInfo {
   _id: string;
   firstName: string;
@@ -178,9 +174,9 @@ export const reclamosService = {
     return response.data;
   },
 
-  // Actualizar área de un reclamo (US 8)
-  async updateArea(id: string, data: UpdateAreaDto): Promise<Reclamo> {
-    const response = await api.patch(RECLAMOS_ENDPOINTS.UPDATE_AREA(id), data);
+  // Reasignar área de un reclamo (US 8 - Encargado/Gerente)
+  async reassignArea(id: string, nuevaAreaId: string): Promise<Reclamo> {
+    const response = await api.post(RECLAMOS_ENDPOINTS.REASSIGN_AREA(id, nuevaAreaId));
     return response.data;
   },
 
