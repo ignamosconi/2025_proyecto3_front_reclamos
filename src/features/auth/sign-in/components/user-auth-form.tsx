@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
 import { cn } from '@/lib/utils'
 import { authService } from '@/services/auth/auth.service'
+import { getDashboardRouteByRole } from '@/lib/auth-routes'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -77,8 +78,23 @@ export function UserAuthForm({
 
       toast.success('Inicio de sesión exitoso')
 
-      // Redirigimos al usuario
-      const targetPath = redirectTo || '/';
+      // Redirigimos al usuario según su rol
+      // Si hay un redirectTo (por ejemplo, si intentó acceder a una ruta protegida),
+      // usamos ese. Si no, redirigimos según el rol
+      let targetPath = redirectTo;
+      
+      if (!targetPath && loginPromise.user?.role) {
+        targetPath = getDashboardRouteByRole(loginPromise.user.role);
+      } else if (!targetPath) {
+        // Si no tenemos rol, intentamos obtenerlo del token
+        const user = auth.user;
+        if (user?.role) {
+          targetPath = getDashboardRouteByRole(user.role);
+        } else {
+          targetPath = '/';
+        }
+      }
+      
       navigate({ to: targetPath, replace: true });
       
     } catch (error: any) {
