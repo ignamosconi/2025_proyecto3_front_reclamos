@@ -28,19 +28,31 @@ export const usersColumns: ColumnDef<User>[] = [
     ),
   },
   {
-    accessorKey: 'phone',
+    id: 'areas',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Teléfono' />
+      <DataTableColumnHeader column={column} title='Áreas Responsables' />
     ),
-    cell: ({ row }) => <div>{row.getValue('phone')}</div>,
-    enableSorting: false,
-  },
-  {
-    accessorKey: 'address',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Dirección' />
-    ),
-    cell: ({ row }) => <div>{row.getValue('address')}</div>,
+    cell: ({ row }) => {
+      const areas = row.original.areas || []
+      if (areas.length === 0) {
+        return <div className='text-muted-foreground text-sm'>Sin áreas</div>
+      }
+      return (
+        <div className='flex flex-wrap gap-1'>
+          {areas.slice(0, 2).map((area) => (
+            <span
+              key={area._id}
+              className='inline-flex items-center rounded-md bg-muted px-2 py-1 text-xs font-medium'
+            >
+              {area.nombre}
+            </span>
+          ))}
+          {areas.length > 2 && (
+            <span className='text-muted-foreground text-xs'>+{areas.length - 2} más</span>
+          )}
+        </div>
+      )
+    },
     enableSorting: false,
   },
   {
@@ -76,13 +88,19 @@ export const usersColumns: ColumnDef<User>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Creado en' />
     ),
-    cell: ({ row }) => <div>{
-      new Date(row.getValue('createdAt')).toLocaleDateString('es-ES', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-      })
-      }</div>,
+    cell: ({ row }) => {
+      const createdAt = row.original.createdAt
+      if (!createdAt) return <div className='text-muted-foreground'>-</div>
+      return (
+        <div>
+          {new Date(createdAt).toLocaleDateString('es-ES', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+          })}
+        </div>
+      )
+    },
     enableSorting: false,
   },
   {

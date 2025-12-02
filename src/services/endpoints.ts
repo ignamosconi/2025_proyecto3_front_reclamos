@@ -17,13 +17,19 @@ export const AUTH_ENDPOINTS = {
 // Endpoints de usuarios
 export const USERS_ENDPOINTS = {
   GET_ALL: `${API_BASE_URL}/users`,
-  GET_BY_ID: (id: string) => `${API_BASE_URL}/users/${id}`,
-  CREATE: `${API_BASE_URL}/users`,
-  UPDATE: (id: string) => `${API_BASE_URL}/users/${id}`,
-  DELETE: (id: string) => `${API_BASE_URL}/users/${id}`,
+  GET_BY_ID: (id: string) => `${API_BASE_URL}/users/id/${id}`,
+  GET_BY_EMAIL: (email: string) => `${API_BASE_URL}/users/email/${email}`,
+  UPDATE_PROFILE: `${API_BASE_URL}/users/profile`,
+  REGISTER_STAFF: `${API_BASE_URL}/users/register-staff`,
   REGISTER_CLIENT: `${API_BASE_URL}/users/register-client`,
-  REGISTER_EMPLOYEE: `${API_BASE_URL}/users/register`,
-  REGISTER_OWNER: `${API_BASE_URL}/users/register-owner`
+  UPDATE_STAFF: (id: string) => `${API_BASE_URL}/users/staff/${id}`,
+  DELETE: (id: string) => `${API_BASE_URL}/users/${id}`,
+};
+
+// Endpoints de áreas responsables
+export const AREAS_ENDPOINTS = {
+  GET_ALL: `${API_BASE_URL}/area-reclamo`,
+  GET_BY_ID: (id: string) => `${API_BASE_URL}/area-reclamo/${id}`,
 };
 
 // Endpoints de catalogo
@@ -73,22 +79,6 @@ export const AUDIT_ENDPOINTS = {
   GET_ALL: `${API_BASE_URL}/auditoria`,
   GET_EVENT_TYPES: `${API_BASE_URL}/auditoria/enum`,
 };
-
-// Endpoints de ventas (sales)
-export const SALES_ENDPOINTS = {
-  GET_ALL: `${API_BASE_URL}/ventas`,
-  GET_BY_ID: (id: string) => `${API_BASE_URL}/ventas/${id}`,
-  CREATE: `${API_BASE_URL}/ventas`,
-  UPDATE: (id: string) => `${API_BASE_URL}/ventas/${id}`,
-};
-
-// Endpoints de compras (purchases)
-export const PURCHASES_ENDPOINTS = {
-  GET_ALL: `${API_BASE_URL}/compras`,
-  GET_BY_ID: (id: string) => `${API_BASE_URL}/compras/${id}`,
-  CREATE: `${API_BASE_URL}/compras`,
-  UPDATE: (id: string) => `${API_BASE_URL}/compras/${id}`,  
-}
 
 // Función auxiliar para crear URLs con parámetros de consulta
 export const buildQueryParams = (baseUrl: string, params: Record<string, string | number | boolean | null | undefined>) => {

@@ -7,8 +7,6 @@ import {
   Building,
   ShoppingBag,
   Layers,
-  AlertCircle,
-  Package,
 } from 'lucide-react'
 import { type SidebarData } from '../types'
 
@@ -63,21 +61,6 @@ export const sidebarData: SidebarData = {
           title: 'Productos',
           url: '/products',
           icon: ShoppingBag,
-        }
-      ]
-    },
-    {
-      title: 'Operaciones',
-      items: [
-        {
-          title: 'Reclamos',
-          url: '/sales',
-          icon: AlertCircle,
-        },
-         {
-          title: 'Compras',
-          url: '/purchases',
-          icon: Package,
         }
       ]
     },

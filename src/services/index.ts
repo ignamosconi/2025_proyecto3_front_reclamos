@@ -1,8 +1,6 @@
 export { authService } from './auth/auth.service'
 export { usersService } from './users/users.service'
 export { productsService } from './products/products.service'
-export { purchasesService } from './purchases/purchases.service'
-export { salesService } from './sales/sales.service'
 export { suppliersService } from './suppliers/suppliers.service'
 export { linesService } from './lines/lines.service'
 export { brandsService } from './brands/brands.service'

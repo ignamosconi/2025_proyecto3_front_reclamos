@@ -16,10 +16,18 @@ export function Users() {
   const navigate = route.useNavigate()
   const queryClient = useQueryClient()
 
-  const { data: users = [] } = useQuery({
-    queryKey: ['users'],
-    queryFn: () => usersService.getAll()
+  const { data: usersResponse } = useQuery({
+    queryKey: ['users', search],
+    queryFn: () => usersService.getAll({
+      page: search.page as number,
+      limit: search.limit as number,
+      sort: search.sort as 'asc' | 'desc',
+      role: search.role as string,
+      search: search.search as string,
+    })
   })
+
+  const users = usersResponse?.data || []
 
   const handleRefreshUsers = () => {
     queryClient.invalidateQueries({ queryKey: ['users'] })

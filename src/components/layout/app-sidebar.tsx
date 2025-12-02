@@ -22,9 +22,12 @@ export function AppSidebar() {
   const filteredNavGroups = useMemo(() => {
     return sidebarData.navGroups.map((group) => {
       const filteredItems = group.items.filter((item) => {
-        // Si el item es "Usuarios", "Líneas de producto", "Marcas" o "Proveedores", solo mostrarlo si el usuario es "Dueño"
+        // Si el item es "Usuarios", solo mostrarlo si el usuario es "Gerente" (US 4)
+        if (item.title === 'Usuarios') {
+          return hasRole('Gerente')
+        }
+        // Si el item es "Líneas de producto", "Marcas" o "Proveedores", solo mostrarlo si el usuario es "Dueño"
         if (
-          item.title === 'Usuarios' || 
           item.title === 'Líneas de producto' || 
           item.title === 'Marcas' || 
           item.title === 'Proveedores' ||

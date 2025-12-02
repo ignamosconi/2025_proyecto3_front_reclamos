@@ -11,12 +11,12 @@ export function getDashboardRouteByRole(role: string): string {
   switch (role) {
     case 'Cliente':
       // Dashboard Cliente - para usuarios con rol Cliente
-      // Los clientes gestionan sus reclamos
-      return '/sales'; // Ruta para que los clientes gestionen sus reclamos
+      // Los clientes ven el dashboard principal
+      return '/';
     case 'Encargado':
       // Dashboard Operativo - para usuarios con rol Encargado
-      // Los encargados gestionan reclamos operativamente
-      return '/sales'; // Ruta para gestión operativa de reclamos
+      // Los encargados ven el dashboard principal
+      return '/';
     case 'Gerente':
       // Dashboard Estratégico - para usuarios con rol Gerente
       // Los gerentes ven métricas y estadísticas generales

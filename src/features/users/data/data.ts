@@ -1,14 +1,32 @@
-import { UserCheck, Users } from 'lucide-react'
+import { UserCheck, Users, Shield } from 'lucide-react'
 
 export const roles = [
   {
-    label: 'Dueño',
-    value: 'Dueño',
+    label: 'Cliente',
+    value: 'Cliente',
+    icon: Users,
+  },
+  {
+    label: 'Encargado',
+    value: 'Encargado',
     icon: UserCheck,
   },
   {
-    label: 'Empleado',
-    value: 'Empleado',
-    icon: Users,
+    label: 'Gerente',
+    value: 'Gerente',
+    icon: Shield,
+  },
+] as const
+
+export const staffRoles = [
+  {
+    label: 'Encargado',
+    value: 'Encargado',
+    icon: UserCheck,
+  },
+  {
+    label: 'Gerente',
+    value: 'Gerente',
+    icon: Shield,
   },
 ] as const

@@ -32,8 +32,8 @@ export const Route = createFileRoute('/_authenticated/users/')({
   beforeLoad: () => {
     const { hasRole } = useAuthStore.getState().auth
     
-    // Solo permitir acceso a usuarios con rol "Dueño"
-    if (!hasRole('Dueño')) {
+    // Solo permitir acceso a usuarios con rol "Gerente" (US 4)
+    if (!hasRole('Gerente')) {
       throw redirect({
         to: '/',
       })

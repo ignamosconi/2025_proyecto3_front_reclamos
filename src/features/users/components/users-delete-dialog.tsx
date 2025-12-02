@@ -31,7 +31,7 @@ export function UsersDeleteDialog({
 
     try {
       setIsDeleting(true)
-      await usersService.delete(currentRow.id)
+      await usersService.delete(currentRow._id, value.trim())
       toast.success('Usuario eliminado correctamente')
       onOpenChange(false)
       setValue('')

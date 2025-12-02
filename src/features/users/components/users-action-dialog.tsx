@@ -3,7 +3,8 @@
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -20,36 +21,32 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/password-input'
 import { SelectDropdown } from '@/components/select-dropdown'
+import { Checkbox } from '@/components/ui/checkbox'
 import { validatePassword } from '@/lib/validate-password'
-import { usersService, type CreateUserDto, type UpdateUserDto } from '@/services/users/users.service'
+import { usersService, type CreateStaffDto, type UpdateStaffDto } from '@/services/users/users.service'
+import { areasService } from '@/services/areas/areas.service'
 import { toast } from 'sonner'
-import { roles } from '../data/data'
+import { staffRoles } from '../data/data'
 import { type User } from '../data/schema'
 
-const formSchema = z
+const createStaffSchema = z
   .object({
     firstName: z.string().min(1, 'El nombre es requerido.'),
     lastName: z.string().min(1, 'El apellido es requerido.'),
     email: z.string().email('Ingresa un correo electrónico válido.'),
-    phone: z.string().min(1, 'El teléfono es requerido.'),
-    address: z.string().min(1, 'La dirección es requerida.'),
+    role: z.union([z.literal('Encargado'), z.literal('Gerente')]),
+    areaIds: z.array(z.string()).min(1, 'Debe seleccionar al menos un área responsable.'),
     password: z.string().transform((pwd) => pwd.trim()),
-    role: z.union([z.literal('Dueño'), z.literal('Empleado')]),
-    confirmPassword: z.string().transform((pwd) => pwd.trim()),
-    isEdit: z.boolean(),
+    passwordConfirmation: z.string().transform((pwd) => pwd.trim()),
   })
   .superRefine((data, ctx) => {
-    // Si es edición y no se ingresó contraseña, no validar
-    if (data.isEdit && !data.password) {
-      return
-    }
-
     // Validar que la contraseña no esté vacía en modo creación
-    if (!data.isEdit && !data.password) {
+    if (!data.password) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: 'La contraseña es requerida.',
@@ -75,15 +72,25 @@ const formSchema = z
     })
 
     // Validar que las contraseñas coincidan
-    if (data.password && data.password !== data.confirmPassword) {
+    if (data.password && data.password !== data.passwordConfirmation) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: 'Las contraseñas no coinciden.',
-        path: ['confirmPassword'],
+        path: ['passwordConfirmation'],
       })
     }
   })
-type UserForm = z.infer<typeof formSchema>
+
+const updateStaffSchema = z.object({
+  firstName: z.string().min(1, 'El nombre es requerido.'),
+  lastName: z.string().min(1, 'El apellido es requerido.'),
+  email: z.string().email('Ingresa un correo electrónico válido.'),
+  role: z.union([z.literal('Cliente'), z.literal('Encargado'), z.literal('Gerente')]),
+  areaIds: z.array(z.string()).min(1, 'Debe seleccionar al menos un área responsable.'),
+})
+
+type CreateStaffForm = z.infer<typeof createStaffSchema>
+type UpdateStaffForm = z.infer<typeof updateStaffSchema>
 
 type UserActionDialogProps = {
   currentRow?: User
@@ -100,270 +107,424 @@ export function UsersActionDialog({
 }: UserActionDialogProps) {
   const isEdit = !!currentRow
   const [isSubmitting, setIsSubmitting] = useState(false)
-  
-  const form = useForm<UserForm>({
-    resolver: zodResolver(formSchema),
-    defaultValues: isEdit
-      ? {
-          firstName: currentRow.firstName,
-          lastName: currentRow.lastName,
-          email: currentRow.email,
-          phone: currentRow.phone,
-          address: currentRow.address,
-          role: currentRow.role,
-          password: '',
-          confirmPassword: '',
-          isEdit,
-        }
-      : {
-          firstName: '',
-          lastName: '',
-          email: '',
-          phone: '',
-          address: '',
-          role: 'Empleado',
-          password: '',
-          confirmPassword: '',
-          isEdit,
-        },
+
+  // Obtener áreas disponibles
+  const { data: areasData } = useQuery({
+    queryKey: ['areas'],
+    queryFn: () => areasService.getAll({ limit: 100 }),
+    enabled: open,
   })
 
-  const onSubmit = async (values: UserForm) => {
+  const areas = areasData?.data || []
+
+  const createForm = useForm<CreateStaffForm>({
+    resolver: zodResolver(createStaffSchema),
+    defaultValues: {
+      firstName: '',
+      lastName: '',
+      email: '',
+      role: 'Encargado',
+      areaIds: [],
+      password: '',
+      passwordConfirmation: '',
+    },
+  })
+
+  const updateForm = useForm<UpdateStaffForm>({
+    resolver: zodResolver(updateStaffSchema),
+    defaultValues: {
+      firstName: currentRow?.firstName || '',
+      lastName: currentRow?.lastName || '',
+      email: currentRow?.email || '',
+      role: (currentRow?.role as 'Cliente' | 'Encargado' | 'Gerente') || 'Encargado',
+      areaIds: currentRow?.areas?.map((a) => a._id) || [],
+    },
+  })
+
+  // Actualizar valores del formulario de edición cuando cambia currentRow
+  useEffect(() => {
+    if (isEdit && currentRow) {
+      updateForm.reset({
+        firstName: currentRow.firstName,
+        lastName: currentRow.lastName,
+        email: currentRow.email,
+        role: (currentRow.role as 'Cliente' | 'Encargado' | 'Gerente'),
+        areaIds: currentRow.areas?.map((a) => a._id) || [],
+      })
+    } else {
+      createForm.reset()
+    }
+  }, [currentRow, isEdit, createForm, updateForm])
+
+  const handleCreateSubmit = async (values: CreateStaffForm) => {
     try {
       setIsSubmitting(true)
-      
-      if (isEdit && currentRow) {
-        // Actualizar usuario
-        const updateData: UpdateUserDto = {
-          firstName: values.firstName,
-          lastName: values.lastName,
-          email: values.email,
-          phone: values.phone,
-          address: values.address,
-          role: values.role,
-        }
-        
-        // Solo incluir password si se proporcionó
-        if (values.password) {
-          updateData.password = values.password
-        }
-        
-        await usersService.update(currentRow.id, updateData)
-        toast.success('Usuario actualizado correctamente')
-      } else {
-        // Crear nuevo usuario
-        const createData: CreateUserDto = {
-          firstName: values.firstName,
-          lastName: values.lastName,
-          email: values.email,
-          phone: values.phone,
-          address: values.address,
-          role: values.role,
-          password: values.password,
-        }
-        
-        await usersService.create(createData)
-        toast.success('Usuario creado correctamente')
+      const createData: CreateStaffDto = {
+        firstName: values.firstName,
+        lastName: values.lastName,
+        email: values.email,
+        role: values.role,
+        areaIds: values.areaIds,
+        password: values.password,
+        passwordConfirmation: values.passwordConfirmation,
       }
-      
-      form.reset()
+
+      await usersService.createStaff(createData)
+      toast.success('Usuario creado correctamente. Se ha enviado un correo de bienvenida.')
+      createForm.reset()
       onOpenChange(false)
       onSuccess?.()
     } catch (error: any) {
-      console.error('Error al guardar usuario:', error)
-      const errorMessage = error.response?.data?.message || 'Error al guardar el usuario'
+      console.error('Error al crear usuario:', error)
+      const errorMessage = error.response?.data?.message || 'Error al crear el usuario'
       toast.error(errorMessage)
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  const isPasswordTouched = !!form.formState.dirtyFields.password
+  const handleUpdateSubmit = async (values: UpdateStaffForm) => {
+    try {
+      setIsSubmitting(true)
+      if (!currentRow) return
 
-  return (
-    <Dialog
-      open={open}
-      onOpenChange={(state) => {
-        form.reset()
-        onOpenChange(state)
-      }}
-    >
-      <DialogContent className='sm:max-w-lg'>
-        <DialogHeader className='text-start'>
-          <DialogTitle>{isEdit ? 'Editar usuario' : 'Agregar nuevo usuario'}</DialogTitle>
-          <DialogDescription>
-            {isEdit 
-              ? 'Actualiza la información del usuario. Haz clic en guardar cuando termines.' 
-              : 'Crea un nuevo usuario. Haz clic en guardar cuando termines.'}
-          </DialogDescription>
-        </DialogHeader>
-        <div className='h-[26.25rem] w-[calc(100%+0.75rem)] overflow-y-auto py-1 pe-3'>
-          <Form {...form}>
+      const updateData: UpdateStaffDto = {
+        firstName: values.firstName,
+        lastName: values.lastName,
+        email: values.email,
+        role: values.role,
+        areaIds: values.areaIds,
+      }
+
+      await usersService.updateStaff(currentRow._id, updateData)
+      toast.success('Usuario actualizado correctamente')
+      onOpenChange(false)
+      onSuccess?.()
+    } catch (error: any) {
+      console.error('Error al actualizar usuario:', error)
+      const errorMessage = error.response?.data?.message || 'Error al actualizar el usuario'
+      toast.error(errorMessage)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  if (isEdit) {
+    return (
+      <Dialog
+        open={open}
+        onOpenChange={(state) => {
+          updateForm.reset()
+          onOpenChange(state)
+        }}
+      >
+        <DialogContent className='sm:max-w-2xl max-h-[90vh] overflow-y-auto'>
+          <DialogHeader className='text-start'>
+            <DialogTitle>Editar Usuario</DialogTitle>
+            <DialogDescription>
+              Actualiza la información del usuario. El gerente no puede modificar la contraseña.
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...updateForm}>
             <form
-              id='user-form'
-              onSubmit={form.handleSubmit(onSubmit)}
-              className='space-y-4 px-0.5'
+              id='update-staff-form'
+              onSubmit={updateForm.handleSubmit(handleUpdateSubmit)}
+              className='space-y-4'
             >
+              <div className='grid grid-cols-2 gap-4'>
+                <FormField
+                  control={updateForm.control}
+                  name='firstName'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nombre</FormLabel>
+                      <FormControl>
+                        <Input placeholder='Juan' {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={updateForm.control}
+                  name='lastName'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Apellido</FormLabel>
+                      <FormControl>
+                        <Input placeholder='Pérez' {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
               <FormField
-                control={form.control}
-                name='firstName'
-                render={({ field }) => (
-                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                    <FormLabel className='col-span-2 text-end'>
-                      Nombre
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder='Juan'
-                        className='col-span-4'
-                        autoComplete='off'
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage className='col-span-4 col-start-3' />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name='lastName'
-                render={({ field }) => (
-                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                    <FormLabel className='col-span-2 text-end'>
-                      Apellido
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder='Pérez'
-                        className='col-span-4'
-                        autoComplete='off'
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage className='col-span-4 col-start-3' />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
+                control={updateForm.control}
                 name='email'
                 render={({ field }) => (
-                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                    <FormLabel className='col-span-2 text-end'>Correo</FormLabel>
+                  <FormItem>
+                    <FormLabel>Correo Electrónico</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder='juan.perez@gmail.com'
-                        className='col-span-4'
-                        {...field}
-                      />
+                      <Input type='email' placeholder='juan.perez@example.com' {...field} />
                     </FormControl>
-                    <FormMessage className='col-span-4 col-start-3' />
+                    <FormMessage />
                   </FormItem>
                 )}
               />
+
               <FormField
-                control={form.control}
-                name='phone'
-                render={({ field }) => (
-                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                    <FormLabel className='col-span-2 text-end'>
-                      Teléfono
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder='+123456789'
-                        className='col-span-4'
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage className='col-span-4 col-start-3' />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name='address'
-                render={({ field }) => (
-                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                    <FormLabel className='col-span-2 text-end'>
-                      Dirección
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder='Av. Principal 123'
-                        className='col-span-4'
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage className='col-span-4 col-start-3' />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
+                control={updateForm.control}
                 name='role'
                 render={({ field }) => (
-                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                    <FormLabel className='col-span-2 text-end'>Rol</FormLabel>
+                  <FormItem>
+                    <FormLabel>Rol</FormLabel>
                     <SelectDropdown
-                      defaultValue={field.value}
+                      value={field.value}
                       onValueChange={field.onChange}
                       placeholder='Selecciona un rol'
-                      className='col-span-4 w-full'
-                      items={roles.map(({ label, value }) => ({
-                        label,  
-                        value,
-                      }))}
+                      items={[
+                        { label: 'Encargado', value: 'Encargado' },
+                        { label: 'Gerente', value: 'Gerente' },
+                      ]}
                     />
-                    <FormMessage className='col-span-4 col-start-3' />
+                    <FormMessage />
                   </FormItem>
                 )}
               />
+
               <FormField
-                control={form.control}
-                name='password'
-                render={({ field }) => (
-                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                    <FormLabel className='col-span-2 text-end'>
-                      Contraseña{isEdit && ' (opcional)'}
-                    </FormLabel>
-                    <FormControl>
-                      <PasswordInput
-                        placeholder='ej., S3cur3P@ssw0rd'
-                        className='col-span-4'
-                        {...field}
+                control={updateForm.control}
+                name='areaIds'
+                render={() => (
+                  <FormItem>
+                    <div className='mb-4'>
+                      <FormLabel>Áreas Responsables</FormLabel>
+                      <FormDescription>
+                        Selecciona una o más áreas responsables para este usuario.
+                      </FormDescription>
+                    </div>
+                    {areas.map((area) => (
+                      <FormField
+                        key={area._id}
+                        control={updateForm.control}
+                        name='areaIds'
+                        render={({ field }) => {
+                          return (
+                            <FormItem
+                              key={area._id}
+                              className='flex flex-row items-start space-x-3 space-y-0'
+                            >
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value?.includes(area._id)}
+                                  onCheckedChange={(checked) => {
+                                    return checked
+                                      ? field.onChange([...field.value, area._id])
+                                      : field.onChange(
+                                          field.value?.filter((value) => value !== area._id)
+                                        )
+                                  }}
+                                />
+                              </FormControl>
+                              <FormLabel className='font-normal'>
+                                {area.nombre}
+                                {area.descripcion && (
+                                  <span className='text-muted-foreground ml-2 text-sm'>
+                                    - {area.descripcion}
+                                  </span>
+                                )}
+                              </FormLabel>
+                            </FormItem>
+                          )
+                        }}
                       />
-                    </FormControl>
-                    <FormMessage className='col-span-4 col-start-3' />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name='confirmPassword'
-                render={({ field }) => (
-                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                    <FormLabel className='col-span-2 text-end'>
-                      Confirmar Contraseña
-                    </FormLabel>
-                    <FormControl>
-                      <PasswordInput
-                        disabled={!isPasswordTouched}
-                        placeholder='ej., S3cur3P@ssw0rd'
-                        className='col-span-4'
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage className='col-span-4 col-start-3' />
+                    ))}
+                    <FormMessage />
                   </FormItem>
                 )}
               />
             </form>
           </Form>
-        </div>
+          <DialogFooter>
+            <Button type='submit' form='update-staff-form' disabled={isSubmitting}>
+              {isSubmitting ? 'Guardando...' : 'Guardar cambios'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    )
+  }
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(state) => {
+        createForm.reset()
+        onOpenChange(state)
+      }}
+    >
+      <DialogContent className='sm:max-w-2xl max-h-[90vh] overflow-y-auto'>
+        <DialogHeader className='text-start'>
+          <DialogTitle>Crear Nuevo Usuario (Staff)</DialogTitle>
+          <DialogDescription>
+            Crea un nuevo Encargado o Gerente. Se enviará un correo de bienvenida al usuario.
+          </DialogDescription>
+        </DialogHeader>
+        <Form {...createForm}>
+          <form
+            id='create-staff-form'
+            onSubmit={createForm.handleSubmit(handleCreateSubmit)}
+            className='space-y-4'
+          >
+            <div className='grid grid-cols-2 gap-4'>
+              <FormField
+                control={createForm.control}
+                name='firstName'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nombre</FormLabel>
+                    <FormControl>
+                      <Input placeholder='Juan' {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={createForm.control}
+                name='lastName'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Apellido</FormLabel>
+                    <FormControl>
+                      <Input placeholder='Pérez' {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={createForm.control}
+              name='email'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Correo Electrónico</FormLabel>
+                  <FormControl>
+                    <Input type='email' placeholder='juan.perez@example.com' {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={createForm.control}
+              name='role'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Rol</FormLabel>
+                  <SelectDropdown
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    placeholder='Selecciona un rol'
+                    items={staffRoles.map(({ label, value }) => ({
+                      label,
+                      value,
+                    }))}
+                  />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={createForm.control}
+              name='areaIds'
+              render={() => (
+                <FormItem>
+                  <div className='mb-4'>
+                    <FormLabel>Áreas Responsables</FormLabel>
+                    <FormDescription>
+                      Selecciona una o más áreas responsables para este usuario.
+                    </FormDescription>
+                  </div>
+                  {areas.map((area) => (
+                    <FormField
+                      key={area._id}
+                      control={createForm.control}
+                      name='areaIds'
+                      render={({ field }) => {
+                        return (
+                          <FormItem
+                            key={area._id}
+                            className='flex flex-row items-start space-x-3 space-y-0'
+                          >
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value?.includes(area._id)}
+                                onCheckedChange={(checked) => {
+                                  return checked
+                                    ? field.onChange([...field.value, area._id])
+                                    : field.onChange(
+                                        field.value?.filter((value) => value !== area._id)
+                                      )
+                                }}
+                              />
+                            </FormControl>
+                            <FormLabel className='font-normal'>
+                              {area.nombre}
+                              {area.descripcion && (
+                                <span className='text-muted-foreground ml-2 text-sm'>
+                                  - {area.descripcion}
+                                </span>
+                              )}
+                            </FormLabel>
+                          </FormItem>
+                        )
+                      }}
+                    />
+                  ))}
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={createForm.control}
+              name='password'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Contraseña</FormLabel>
+                  <FormControl>
+                    <PasswordInput placeholder='ej., S3cur3P@ssw0rd' {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={createForm.control}
+              name='passwordConfirmation'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Confirmar Contraseña</FormLabel>
+                  <FormControl>
+                    <PasswordInput placeholder='Confirma tu contraseña' {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </form>
+        </Form>
         <DialogFooter>
-          <Button type='submit' form='user-form' disabled={isSubmitting}>
-            {isSubmitting ? 'Guardando...' : 'Guardar cambios'}
+          <Button type='submit' form='create-staff-form' disabled={isSubmitting}>
+            {isSubmitting ? 'Creando...' : 'Crear usuario'}
           </Button>
         </DialogFooter>
       </DialogContent>

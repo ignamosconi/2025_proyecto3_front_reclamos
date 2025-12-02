@@ -1,7 +1,9 @@
 import {
   ChevronsUpDown,
   LogOut,
+  User,
 } from 'lucide-react'
+import { Link } from '@tanstack/react-router'
 import useDialogState from '@/hooks/use-dialog-state'
 import { useAuthStore } from '@/stores/auth-store'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -86,6 +88,13 @@ export function NavUser() {
                   </div>
                 </div>
               </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link to='/profile' className='cursor-pointer flex items-center'>
+                  <User className='mr-2 h-4 w-4' />
+                  Mi Perfil
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => setOpen(true)} className='cursor-pointer'>
                 <LogOut />
