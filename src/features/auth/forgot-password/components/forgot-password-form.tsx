@@ -72,9 +72,9 @@ export function ForgotPasswordForm({
           name='email'
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>Correo electrónico</FormLabel>
               <FormControl>
-                <Input placeholder='correo@gmail.com' {...field} />
+                <Input type='email' placeholder='correo@ejemplo.com' {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
