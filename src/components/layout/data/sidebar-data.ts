@@ -7,6 +7,7 @@ import {
   Building,
   ShoppingBag,
   Layers,
+  FileText,
 } from 'lucide-react'
 import { type SidebarData } from '../types'
 
@@ -36,6 +37,11 @@ export const sidebarData: SidebarData = {
           title: 'Usuarios',
           url: '/users',
           icon: Users,
+        },
+        {
+          title: 'Tipos de Reclamos',
+          url: '/tipo-reclamo',
+          icon: FileText,
         }
       ],
     },

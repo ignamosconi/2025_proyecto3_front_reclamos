@@ -80,6 +80,16 @@ export const AUDIT_ENDPOINTS = {
   GET_EVENT_TYPES: `${API_BASE_URL}/auditoria/enum`,
 };
 
+// Endpoints de tipos de reclamos
+export const TIPO_RECLAMO_ENDPOINTS = {
+  GET_ALL: `${API_BASE_URL}/tipo-reclamo`,
+  GET_BY_ID: (id: string) => `${API_BASE_URL}/tipo-reclamo/${id}`,
+  GET_BY_NAME: (nombre: string) => `${API_BASE_URL}/tipo-reclamo/name/${nombre}`,
+  CREATE: `${API_BASE_URL}/tipo-reclamo`,
+  UPDATE: (id: string) => `${API_BASE_URL}/tipo-reclamo/${id}`,
+  DELETE: (id: string) => `${API_BASE_URL}/tipo-reclamo/${id}`,
+};
+
 // Función auxiliar para crear URLs con parámetros de consulta
 export const buildQueryParams = (baseUrl: string, params: Record<string, string | number | boolean | null | undefined>) => {
   const url = new URL(baseUrl);
