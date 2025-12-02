@@ -58,7 +58,7 @@ export const usersService = {
     if (query?.page) params.append('page', query.page.toString());
     if (query?.limit) params.append('limit', query.limit.toString());
     if (query?.sort) params.append('sort', query.sort);
-    if (query?.role) params.append('rol', query.role);
+    if (query?.role) params.append('role', query.role);
     if (query?.search) params.append('search', query.search);
     
     const url = `${USERS_ENDPOINTS.GET_ALL}${params.toString() ? `?${params.toString()}` : ''}`;

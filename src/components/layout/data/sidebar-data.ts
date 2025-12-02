@@ -9,6 +9,8 @@ import {
   Layers,
   FileText,
   FolderTree,
+  AlertCircle,
+  FolderKanban,
 } from 'lucide-react'
 import { type SidebarData } from '../types'
 
@@ -35,6 +37,11 @@ export const sidebarData: SidebarData = {
           icon: LayoutDashboard,
         },
         {
+          title: 'Reclamos',
+          url: '/reclamos',
+          icon: AlertCircle,
+        },
+        {
           title: 'Usuarios',
           url: '/users',
           icon: Users,
@@ -48,6 +55,11 @@ export const sidebarData: SidebarData = {
           title: 'Áreas Responsables',
           url: '/areas',
           icon: FolderTree,
+        },
+        {
+          title: 'Proyectos',
+          url: '/proyectos',
+          icon: FolderKanban,
         }
       ],
     },

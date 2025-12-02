@@ -94,6 +94,25 @@ export const TIPO_RECLAMO_ENDPOINTS = {
   DELETE: (id: string) => `${API_BASE_URL}/tipo-reclamo/${id}`,
 };
 
+// Endpoints de reclamos
+export const RECLAMOS_ENDPOINTS = {
+  GET_ALL: `${API_BASE_URL}/reclamos`,
+  GET_BY_ID: (id: string) => `${API_BASE_URL}/reclamos/${id}`,
+  CREATE: `${API_BASE_URL}/reclamos`,
+  UPDATE: (id: string) => `${API_BASE_URL}/reclamos/${id}`,
+  DELETE: (id: string) => `${API_BASE_URL}/reclamos/${id}`,
+};
+
+// Endpoints de proyectos
+export const PROYECTOS_ENDPOINTS = {
+  GET_ALL: `${API_BASE_URL}/proyectos`,
+  GET_BY_ID: (id: string) => `${API_BASE_URL}/proyectos/${id}`,
+  CREATE: `${API_BASE_URL}/proyectos`,
+  UPDATE: (id: string) => `${API_BASE_URL}/proyectos/${id}`,
+  DELETE: (id: string) => `${API_BASE_URL}/proyectos/${id}`,
+  RESTORE: (id: string) => `${API_BASE_URL}/proyectos/${id}/restore`,
+};
+
 // Función auxiliar para crear URLs con parámetros de consulta
 export const buildQueryParams = (baseUrl: string, params: Record<string, string | number | boolean | null | undefined>) => {
   const url = new URL(baseUrl);

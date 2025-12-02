@@ -26,6 +26,14 @@ export function AppSidebar() {
         if (item.title === 'Usuarios' || item.title === 'Tipos de Reclamos' || item.title === 'Áreas Responsables') {
           return hasRole('Gerente')
         }
+        // Si el item es "Reclamos", solo mostrarlo si el usuario es "Cliente" (US 7)
+        if (item.title === 'Reclamos') {
+          return hasRole('Cliente')
+        }
+        // Si el item es "Proyectos", mostrarlo si el usuario es "Cliente", "Encargado" o "Gerente" (US 14)
+        if (item.title === 'Proyectos') {
+          return hasRole('Cliente') || hasRole('Encargado') || hasRole('Gerente')
+        }
         // Si el item es "Líneas de producto", "Marcas" o "Proveedores", solo mostrarlo si el usuario es "Dueño"
         if (
           item.title === 'Líneas de producto' || 
