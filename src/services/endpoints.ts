@@ -21,6 +21,7 @@ export const USERS_ENDPOINTS = {
   CREATE: `${API_BASE_URL}/users`,
   UPDATE: (id: string) => `${API_BASE_URL}/users/${id}`,
   DELETE: (id: string) => `${API_BASE_URL}/users/${id}`,
+  REGISTER_CLIENT: `${API_BASE_URL}/users/register-client`,
   REGISTER_EMPLOYEE: `${API_BASE_URL}/users/register`,
   REGISTER_OWNER: `${API_BASE_URL}/users/register-owner`
 };

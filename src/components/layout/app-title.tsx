@@ -25,7 +25,7 @@ export function AppTitle() {
               onClick={() => setOpenMobile(false)}
               className='grid flex-1 text-start text-sm leading-tight'
             >
-              <span className='truncate font-bold'>Ventas</span>
+              <span className='truncate font-bold'>Reclamos</span>
               <span className='truncate text-xs'>PA - Entrega 2</span>
             </Link>
             <ToggleSidebar />

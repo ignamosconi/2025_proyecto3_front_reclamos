@@ -104,5 +104,11 @@ export const authService = {
     }
 
     return flag;
+  },
+
+  // Registro de cliente público
+  async registerClient(userData: { firstName: string; lastName: string; email: string; password: string; passwordConfirmation: string; }): Promise<{ success: boolean }> {
+    const response = await api.post(USERS_ENDPOINTS.REGISTER_CLIENT, userData);
+    return { success: !!response.data };
   }
 };

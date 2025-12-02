@@ -4,7 +4,6 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate } from '@tanstack/react-router'
 import { toast } from 'sonner'
-import { useAuthStore } from '@/stores/auth-store'
 import { authService } from '@/services/auth/auth.service'
 import { cn } from '@/lib/utils'
 import { validatePassword, formatPasswordErrors } from '@/lib/validate-password'
@@ -22,16 +21,11 @@ import { PasswordInput } from '@/components/password-input'
 
 const formSchema = z
   .object({
-    email: z.email({
-      error: (iss) =>
-        iss.input === '' ? 'Por favor ingresa tu correo' : undefined,
-    }),
+    email: z.string().email('Por favor ingresa un correo electrónico válido'),
     password: z.string().min(1, 'Por favor ingresa tu contraseña'),
-    confirmPassword: z.string().min(1, 'Por favor confirma tu contraseña'),
-    firstName: z.string().min(3, 'Por favor ingresa tu nombre'),
-    lastName: z.string().min(3, 'Por favor ingresa tu apellido'),
-    phone: z.string().min(10, 'Por favor ingresa tu número de teléfono'),
-    address: z.string().min(5, 'Por favor ingresa tu dirección'),
+    passwordConfirmation: z.string().min(1, 'Por favor confirma tu contraseña'),
+    firstName: z.string().min(1, 'Por favor ingresa tu nombre').min(2, 'El nombre debe tener al menos 2 caracteres'),
+    lastName: z.string().min(1, 'Por favor ingresa tu apellido').min(2, 'El apellido debe tener al menos 2 caracteres'),
   })
   .superRefine((data, ctx) => {
     // Validar contraseña con todas las reglas
@@ -50,11 +44,11 @@ const formSchema = z
     }
     
     // Validar que las contraseñas coincidan
-    if (data.password !== data.confirmPassword) {
+    if (data.password !== data.passwordConfirmation) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Las contraseñas no coinciden.",
-        path: ['confirmPassword'],
+        path: ['passwordConfirmation'],
       });
     }
   })
@@ -65,18 +59,15 @@ export function SignUpForm({
 }: React.HTMLAttributes<HTMLFormElement>) {
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
-  const { auth } = useAuthStore()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: '',
       password: '',
-      confirmPassword: '',
+      passwordConfirmation: '',
       firstName: '',
       lastName: '',
-      phone: '',
-      address: ''
     },
   })
 
@@ -84,48 +75,28 @@ export function SignUpForm({
     setIsLoading(true)
 
     try {
-      const registerPromise = await authService.register({
+      const result = await authService.registerClient({
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email,
         password: data.password,
-        phone: data.phone,
-        address: data.address,
+        passwordConfirmation: data.passwordConfirmation,
       });
 
-      
-
-      if (registerPromise) {
-        const loginPromise = await authService.login({
-          email: data.email,
-          password: data.password,
-        });
-
-        if (!loginPromise || !loginPromise.accessToken) {
-          throw new Error('Respuesta inválida del servicio de login');
-        }
-
-        // Actualizamos el store con los tokens
-        auth.setTokens(loginPromise.accessToken, loginPromise.refreshToken);
-
-        // Si tenemos datos del usuario, los guardamos en el store
-        if (loginPromise.user) {
-          auth.setUser(loginPromise.user);
-        }
-
+      if (result.success) {
         // Mostramos mensaje de éxito
         toast.success('¡Registro exitoso!', {
-          description: 'Tu cuenta ha sido creada correctamente.',
+          description: 'Tu cuenta ha sido creada correctamente. Por favor inicia sesión.',
         });
 
-        // Redirigimos al usuario al dashboard
-        navigate({ to: '/', replace: true });
-        return;
+        // Redirigimos al usuario a la pantalla de inicio de sesión
+        navigate({ to: '/sign-in', replace: true });
       } 
     } catch (error: any) {
       console.error('Error en registro:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Error al registrar. Por favor intenta nuevamente.';
       toast.error('Error al registrar', {
-        description: error.response.data.message,
+        description: errorMessage,
       });
     } finally {
       setIsLoading(false)
@@ -170,35 +141,9 @@ export function SignUpForm({
           name='email'
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>Correo electrónico</FormLabel>
               <FormControl>
-                <Input placeholder='correo@gmail.com' {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name='phone'
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Teléfono</FormLabel>
-              <FormControl>
-                <Input placeholder='123-456-7890' {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-         <FormField
-          control={form.control}
-          name='address'
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Dirección</FormLabel>
-              <FormControl>
-                <Input placeholder='Dirección' {...field} />
+                <Input type='email' placeholder='correo@ejemplo.com' {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -219,7 +164,7 @@ export function SignUpForm({
         />
         <FormField
           control={form.control}
-          name='confirmPassword'
+          name='passwordConfirmation'
           render={({ field }) => (
             <FormItem>
               <FormLabel>Confirmar contraseña</FormLabel>
