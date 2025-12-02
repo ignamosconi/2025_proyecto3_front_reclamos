@@ -22,8 +22,8 @@ export function AppSidebar() {
   const filteredNavGroups = useMemo(() => {
     return sidebarData.navGroups.map((group) => {
       const filteredItems = group.items.filter((item) => {
-        // Si el item es "Usuarios" o "Tipos de Reclamos", solo mostrarlo si el usuario es "Gerente" (US 4, US 5)
-        if (item.title === 'Usuarios' || item.title === 'Tipos de Reclamos') {
+        // Si el item es "Usuarios", "Tipos de Reclamos" o "Áreas Responsables", solo mostrarlo si el usuario es "Gerente" (US 4, US 5, US 6)
+        if (item.title === 'Usuarios' || item.title === 'Tipos de Reclamos' || item.title === 'Áreas Responsables') {
           return hasRole('Gerente')
         }
         // Si el item es "Líneas de producto", "Marcas" o "Proveedores", solo mostrarlo si el usuario es "Dueño"

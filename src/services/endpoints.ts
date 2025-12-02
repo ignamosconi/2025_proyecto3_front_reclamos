@@ -30,6 +30,10 @@ export const USERS_ENDPOINTS = {
 export const AREAS_ENDPOINTS = {
   GET_ALL: `${API_BASE_URL}/area-reclamo`,
   GET_BY_ID: (id: string) => `${API_BASE_URL}/area-reclamo/${id}`,
+  GET_BY_NAME: (nombre: string) => `${API_BASE_URL}/area-reclamo/name/${nombre}`,
+  CREATE: `${API_BASE_URL}/area-reclamo`,
+  UPDATE: (id: string) => `${API_BASE_URL}/area-reclamo/${id}`,
+  DELETE: (id: string) => `${API_BASE_URL}/area-reclamo/${id}`,
 };
 
 // Endpoints de catalogo

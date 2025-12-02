@@ -8,6 +8,7 @@ import {
   ShoppingBag,
   Layers,
   FileText,
+  FolderTree,
 } from 'lucide-react'
 import { type SidebarData } from '../types'
 
@@ -42,6 +43,11 @@ export const sidebarData: SidebarData = {
           title: 'Tipos de Reclamos',
           url: '/tipo-reclamo',
           icon: FileText,
+        },
+        {
+          title: 'Áreas Responsables',
+          url: '/areas',
+          icon: FolderTree,
         }
       ],
     },
