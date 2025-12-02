@@ -29,3 +29,4 @@ export type Proyecto = z.infer<typeof proyectoSchema>
 
 export const proyectoListSchema = z.array(proyectoSchema)
 
+

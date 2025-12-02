@@ -26,9 +26,9 @@ export function AppSidebar() {
         if (item.title === 'Usuarios' || item.title === 'Tipos de Reclamos' || item.title === 'Áreas Responsables') {
           return hasRole('Gerente')
         }
-        // Si el item es "Reclamos", solo mostrarlo si el usuario es "Cliente" (US 7)
+        // Si el item es "Reclamos", mostrarlo si el usuario es "Cliente", "Encargado" o "Gerente" (US 7, US 10)
         if (item.title === 'Reclamos') {
-          return hasRole('Cliente')
+          return hasRole('Cliente') || hasRole('Encargado') || hasRole('Gerente')
         }
         // Si el item es "Proyectos", mostrarlo si el usuario es "Cliente", "Encargado" o "Gerente" (US 14)
         if (item.title === 'Proyectos') {

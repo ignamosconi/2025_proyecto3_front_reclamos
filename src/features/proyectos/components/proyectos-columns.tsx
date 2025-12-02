@@ -70,3 +70,4 @@ export const proyectosColumns: ColumnDef<Proyecto>[] = [
   },
 ]
 
+

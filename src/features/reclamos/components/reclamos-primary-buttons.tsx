@@ -1,13 +1,13 @@
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useAreas } from './areas-provider'
+import { useReclamos } from './reclamos-provider'
 
-export function AreasPrimaryButtons() {
-  const { setOpen } = useAreas()
+export function ReclamosPrimaryButtons() {
+  const { setOpen } = useReclamos()
   return (
     <div className='flex gap-2'>
       <Button className='space-x-1' onClick={() => setOpen('add')}>
-        <span>Agregar área</span> <Plus size={18} />
+        <span>Crear reclamo</span> <Plus size={18} />
       </Button>
     </div>
   )

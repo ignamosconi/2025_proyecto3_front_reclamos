@@ -12,13 +12,17 @@ import { ThemeSwitch } from '@/components/theme-switch'
 import { Analytics } from './components/analytics'
 import { Overview } from './components/overview'
 import { RecentSales } from './components/recent-sales'
+import { RecentSynthesis } from './components/recent-synthesis'
 import { DashboardFiltersComponent, DashboardFilters } from './components/dashboard-filters'
 import { useDashboardStats, useRecentSales } from '@/hooks/use-dashboard-stats'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useState, useMemo } from 'react'
+import { useAuthStore } from '@/stores/auth-store'
 
 export function Dashboard() {
   const [filters, setFilters] = useState<DashboardFilters>({})
+  const { auth } = useAuthStore()
+  const isClient = auth.hasRole('Cliente')
   
   // Estabilizar la referencia del objeto filters para evitar re-renderizados infinitos
   const stableFilters = useMemo(() => filters, [
@@ -217,6 +221,19 @@ export function Dashboard() {
                 </CardContent>
               </Card>
             </div>
+            {isClient && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Síntesis de reclamos cerrados</CardTitle>
+                  <CardDescription>
+                    Resoluciones y cierres de tus reclamos
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <RecentSynthesis limit={5} />
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
           <TabsContent value='analytics' className='space-y-4'>
             <Analytics />

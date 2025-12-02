@@ -19,18 +19,19 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { DataTablePagination, DataTableToolbar } from '@/components/data-table'
-import { type Proyecto } from '../data/schema'
-import { proyectosColumns as columns } from './proyectos-columns'
+import { type Reclamo } from '../data/schema'
+import { reclamosColumns as columns } from './reclamos-columns'
+import { ReclamosFilters } from './reclamos-filters'
 
 type DataTableProps = {
-  data: Proyecto[]
+  data: Reclamo[]
   search: Record<string, unknown>
   navigate: NavigateFn
   total: number
   pageSize: number
 }
 
-export function ProyectosTable({ data, search, navigate, total, pageSize }: DataTableProps) {
+export function ReclamosTable({ data, search, navigate, total, pageSize }: DataTableProps) {
   const [rowSelection, setRowSelection] = useState({})
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [sorting, setSorting] = useState<SortingState>([])
@@ -100,11 +101,14 @@ export function ProyectosTable({ data, search, navigate, total, pageSize }: Data
         'flex flex-1 flex-col gap-4'
       )}
     >
-      <DataTableToolbar
-        table={table}
-        searchPlaceholder='Buscar por nombre...'
-        filters={[]}
-      />
+      <div className='flex flex-col gap-4'>
+        <DataTableToolbar
+          table={table}
+          searchPlaceholder='Buscar por título...'
+          filters={[]}
+        />
+        <ReclamosFilters search={search} navigate={navigate} />
+      </div>
       <div className='overflow-hidden rounded-md border'>
         <Table>
           <TableHeader>
@@ -123,7 +127,10 @@ export function ProyectosTable({ data, search, navigate, total, pageSize }: Data
                     >
                       {header.isPlaceholder
                         ? null
-                        : flexRender(header.column.columnDef.header, header.getContext())}
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
                     </TableHead>
                   )
                 })}
@@ -142,20 +149,26 @@ export function ProyectosTable({ data, search, navigate, total, pageSize }: Data
                     <TableCell
                       key={cell.id}
                       className={cn(
-                        'group-hover/row:bg-muted group-data-[state=selected]/row:bg-muted',
+                        'bg-background group-hover/row:bg-muted group-data-[state=selected]/row:bg-muted',
                         cell.column.columnDef.meta?.className,
                         cell.column.columnDef.meta?.tdClassName
                       )}
                     >
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className='h-24 text-center'>
-                  No se encontraron resultados.
+                <TableCell
+                  colSpan={columns.length}
+                  className='h-24 text-center'
+                >
+                  No hay datos para mostrar.
                 </TableCell>
               </TableRow>
             )}

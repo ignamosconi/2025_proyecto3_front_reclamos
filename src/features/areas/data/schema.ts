@@ -18,3 +18,4 @@ export interface ReclamoActivo {
   estado: string;
 }
 
+

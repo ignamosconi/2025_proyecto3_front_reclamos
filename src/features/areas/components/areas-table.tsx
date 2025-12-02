@@ -178,3 +178,4 @@ export function AreasTable({ data, search, navigate, total, pageSize }: DataTabl
   )
 }
 
+
