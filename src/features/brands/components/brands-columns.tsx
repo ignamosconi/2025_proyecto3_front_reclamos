@@ -2,36 +2,11 @@ import { type ColumnDef } from '@tanstack/react-table'
 import { DataTableColumnHeader } from '@/components/data-table'
 import { type Brand } from '../data/schema'
 import { DataTableRowActions } from './data-table-row-actions'
-import { BrandLinesExpandButton } from './brand-lines-expandable'
 
 export const brandsColumns = (
   _onUpdate?: () => void,
-  _refreshTrigger?: number,
-  expanded?: Record<string, boolean>,
-  setExpanded?: React.Dispatch<React.SetStateAction<Record<string, boolean>>>
+  _refreshTrigger?: number
 ): ColumnDef<Brand>[] => [
-  {
-    id: 'expander',
-    header: '',
-    cell: ({ row }) => {
-      const isExpanded = expanded?.[row.original.id] || false
-      const toggleExpanded = () => {
-        setExpanded?.((prev) => ({
-          ...prev,
-          [row.original.id]: !prev[row.original.id],
-        }))
-      }
-      return (
-        <BrandLinesExpandButton
-          isExpanded={isExpanded}
-          onToggle={toggleExpanded}
-          isLoading={false}
-        />
-      )
-    },
-    enableSorting: false,
-    size: 40,
-  },
   {
     accessorKey: 'nombre',
     header: ({ column }) => (

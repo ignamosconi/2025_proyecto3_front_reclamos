@@ -30,11 +30,6 @@ function BrandsContent() {
     setRefreshTrigger(prev => prev + 1)
   }
 
-  const handleAssignLine = (brand: Brand) => {
-    setCurrentRow(brand)
-    setOpen('assignLine')
-  }
-
   return (
     <>
       <Header fixed>
@@ -48,7 +43,7 @@ function BrandsContent() {
           <div>
             <h2 className='text-2xl font-bold tracking-tight'>Listado de marcas</h2>
             <p className='text-muted-foreground'>
-              Administra tus marcas de productos aquí.
+              Administra tus marcas aquí.
             </p>
           </div>
           <BrandsPrimaryButtons />
@@ -59,7 +54,6 @@ function BrandsContent() {
           navigate={navigate} 
           onUpdate={handleRefreshBrands} 
           refreshTrigger={refreshTrigger}
-          onAssignLine={handleAssignLine}
         />
       </Main>
 

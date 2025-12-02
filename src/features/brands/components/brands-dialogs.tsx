@@ -1,6 +1,5 @@
 import { BrandsActionDialog } from './brands-action-dialog'
 import { BrandsDeleteDialog } from './brands-delete-dialog'
-import { BrandsAssignLineDialog } from './brands-assign-line-dialog'
 import { useBrands } from './brands-provider'
 
 
@@ -39,19 +38,6 @@ export function BrandsDialogs({ onSuccess }: BrandsDialogsProps) {
             open={open === 'delete'}
             onOpenChange={() => {
               setOpen('delete')
-              setTimeout(() => {
-                setCurrentRow(null)
-              }, 500)
-            }}
-            currentRow={currentRow}
-            onSuccess={onSuccess}
-          />
-
-          <BrandsAssignLineDialog
-            key={`brand-assign-line-${currentRow.id}`}
-            open={open === 'assignLine'}
-            onOpenChange={() => {
-              setOpen('assignLine')
               setTimeout(() => {
                 setCurrentRow(null)
               }, 500)

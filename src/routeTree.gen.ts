@@ -24,14 +24,13 @@ import { Route as authOtpRouteImport } from './routes/(auth)/otp'
 import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-password'
 import { Route as ClerkAuthenticatedRouteRouteImport } from './routes/clerk/_authenticated/route'
 import { Route as ClerkauthRouteRouteImport } from './routes/clerk/(auth)/route'
+import { Route as AuthenticatedTipoReclamoRouteRouteImport } from './routes/_authenticated/tipo-reclamo/route'
+import { Route as AuthenticatedReclamosRouteRouteImport } from './routes/_authenticated/reclamos/route'
+import { Route as AuthenticatedProyectosRouteRouteImport } from './routes/_authenticated/proyectos/route'
+import { Route as AuthenticatedProfileRouteRouteImport } from './routes/_authenticated/profile/route'
+import { Route as AuthenticatedAreasRouteRouteImport } from './routes/_authenticated/areas/route'
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
-import { Route as AuthenticatedSuppliersIndexRouteImport } from './routes/_authenticated/suppliers/index'
-import { Route as AuthenticatedSalesIndexRouteImport } from './routes/_authenticated/sales/index'
-import { Route as AuthenticatedPurchasesIndexRouteImport } from './routes/_authenticated/purchases/index'
-import { Route as AuthenticatedProductsIndexRouteImport } from './routes/_authenticated/products/index'
-import { Route as AuthenticatedLinesIndexRouteImport } from './routes/_authenticated/lines/index'
 import { Route as AuthenticatedBrandsIndexRouteImport } from './routes/_authenticated/brands/index'
-import { Route as AuthenticatedAuditIndexRouteImport } from './routes/_authenticated/audit/index'
 import { Route as ClerkAuthenticatedUserManagementRouteImport } from './routes/clerk/_authenticated/user-management'
 import { Route as ClerkauthSignUpRouteImport } from './routes/clerk/(auth)/sign-up'
 import { Route as ClerkauthSignInRouteImport } from './routes/clerk/(auth)/sign-in'
@@ -109,37 +108,38 @@ const ClerkauthRouteRoute = ClerkauthRouteRouteImport.update({
   id: '/(auth)',
   getParentRoute: () => ClerkRouteRoute,
 } as any)
+const AuthenticatedTipoReclamoRouteRoute =
+  AuthenticatedTipoReclamoRouteRouteImport.update({
+    id: '/tipo-reclamo',
+    path: '/tipo-reclamo',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedReclamosRouteRoute =
+  AuthenticatedReclamosRouteRouteImport.update({
+    id: '/reclamos',
+    path: '/reclamos',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProyectosRouteRoute =
+  AuthenticatedProyectosRouteRouteImport.update({
+    id: '/proyectos',
+    path: '/proyectos',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProfileRouteRoute =
+  AuthenticatedProfileRouteRouteImport.update({
+    id: '/profile',
+    path: '/profile',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAreasRouteRoute = AuthenticatedAreasRouteRouteImport.update({
+  id: '/areas',
+  path: '/areas',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedUsersIndexRoute = AuthenticatedUsersIndexRouteImport.update({
   id: '/users/',
   path: '/users/',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedSuppliersIndexRoute =
-  AuthenticatedSuppliersIndexRouteImport.update({
-    id: '/suppliers/',
-    path: '/suppliers/',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedSalesIndexRoute = AuthenticatedSalesIndexRouteImport.update({
-  id: '/sales/',
-  path: '/sales/',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedPurchasesIndexRoute =
-  AuthenticatedPurchasesIndexRouteImport.update({
-    id: '/purchases/',
-    path: '/purchases/',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedProductsIndexRoute =
-  AuthenticatedProductsIndexRouteImport.update({
-    id: '/products/',
-    path: '/products/',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedLinesIndexRoute = AuthenticatedLinesIndexRouteImport.update({
-  id: '/lines/',
-  path: '/lines/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedBrandsIndexRoute =
@@ -148,11 +148,6 @@ const AuthenticatedBrandsIndexRoute =
     path: '/brands/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedAuditIndexRoute = AuthenticatedAuditIndexRouteImport.update({
-  id: '/audit/',
-  path: '/audit/',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const ClerkAuthenticatedUserManagementRoute =
   ClerkAuthenticatedUserManagementRouteImport.update({
     id: '/user-management',
@@ -178,6 +173,11 @@ const AuthenticatedErrorsErrorRoute =
 
 export interface FileRoutesByFullPath {
   '/clerk': typeof ClerkAuthenticatedRouteRouteWithChildren
+  '/areas': typeof AuthenticatedAreasRouteRoute
+  '/profile': typeof AuthenticatedProfileRouteRoute
+  '/proyectos': typeof AuthenticatedProyectosRouteRoute
+  '/reclamos': typeof AuthenticatedReclamosRouteRoute
+  '/tipo-reclamo': typeof AuthenticatedTipoReclamoRouteRoute
   '/clerk/': typeof ClerkauthRouteRouteWithChildren
   '/forgot-password': typeof authForgotPasswordRoute
   '/otp': typeof authOtpRoute
@@ -194,16 +194,15 @@ export interface FileRoutesByFullPath {
   '/clerk/sign-in': typeof ClerkauthSignInRoute
   '/clerk/sign-up': typeof ClerkauthSignUpRoute
   '/clerk/user-management': typeof ClerkAuthenticatedUserManagementRoute
-  '/audit': typeof AuthenticatedAuditIndexRoute
   '/brands': typeof AuthenticatedBrandsIndexRoute
-  '/lines': typeof AuthenticatedLinesIndexRoute
-  '/products': typeof AuthenticatedProductsIndexRoute
-  '/purchases': typeof AuthenticatedPurchasesIndexRoute
-  '/sales': typeof AuthenticatedSalesIndexRoute
-  '/suppliers': typeof AuthenticatedSuppliersIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
 }
 export interface FileRoutesByTo {
+  '/areas': typeof AuthenticatedAreasRouteRoute
+  '/profile': typeof AuthenticatedProfileRouteRoute
+  '/proyectos': typeof AuthenticatedProyectosRouteRoute
+  '/reclamos': typeof AuthenticatedReclamosRouteRoute
+  '/tipo-reclamo': typeof AuthenticatedTipoReclamoRouteRoute
   '/clerk': typeof ClerkAuthenticatedRouteRouteWithChildren
   '/forgot-password': typeof authForgotPasswordRoute
   '/otp': typeof authOtpRoute
@@ -220,19 +219,18 @@ export interface FileRoutesByTo {
   '/clerk/sign-in': typeof ClerkauthSignInRoute
   '/clerk/sign-up': typeof ClerkauthSignUpRoute
   '/clerk/user-management': typeof ClerkAuthenticatedUserManagementRoute
-  '/audit': typeof AuthenticatedAuditIndexRoute
   '/brands': typeof AuthenticatedBrandsIndexRoute
-  '/lines': typeof AuthenticatedLinesIndexRoute
-  '/products': typeof AuthenticatedProductsIndexRoute
-  '/purchases': typeof AuthenticatedPurchasesIndexRoute
-  '/sales': typeof AuthenticatedSalesIndexRoute
-  '/suppliers': typeof AuthenticatedSuppliersIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/clerk': typeof ClerkRouteRouteWithChildren
+  '/_authenticated/areas': typeof AuthenticatedAreasRouteRoute
+  '/_authenticated/profile': typeof AuthenticatedProfileRouteRoute
+  '/_authenticated/proyectos': typeof AuthenticatedProyectosRouteRoute
+  '/_authenticated/reclamos': typeof AuthenticatedReclamosRouteRoute
+  '/_authenticated/tipo-reclamo': typeof AuthenticatedTipoReclamoRouteRoute
   '/clerk/(auth)': typeof ClerkauthRouteRouteWithChildren
   '/clerk/_authenticated': typeof ClerkAuthenticatedRouteRouteWithChildren
   '/(auth)/forgot-password': typeof authForgotPasswordRoute
@@ -250,19 +248,18 @@ export interface FileRoutesById {
   '/clerk/(auth)/sign-in': typeof ClerkauthSignInRoute
   '/clerk/(auth)/sign-up': typeof ClerkauthSignUpRoute
   '/clerk/_authenticated/user-management': typeof ClerkAuthenticatedUserManagementRoute
-  '/_authenticated/audit/': typeof AuthenticatedAuditIndexRoute
   '/_authenticated/brands/': typeof AuthenticatedBrandsIndexRoute
-  '/_authenticated/lines/': typeof AuthenticatedLinesIndexRoute
-  '/_authenticated/products/': typeof AuthenticatedProductsIndexRoute
-  '/_authenticated/purchases/': typeof AuthenticatedPurchasesIndexRoute
-  '/_authenticated/sales/': typeof AuthenticatedSalesIndexRoute
-  '/_authenticated/suppliers/': typeof AuthenticatedSuppliersIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/clerk'
+    | '/areas'
+    | '/profile'
+    | '/proyectos'
+    | '/reclamos'
+    | '/tipo-reclamo'
     | '/clerk/'
     | '/forgot-password'
     | '/otp'
@@ -279,16 +276,15 @@ export interface FileRouteTypes {
     | '/clerk/sign-in'
     | '/clerk/sign-up'
     | '/clerk/user-management'
-    | '/audit'
     | '/brands'
-    | '/lines'
-    | '/products'
-    | '/purchases'
-    | '/sales'
-    | '/suppliers'
     | '/users'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/areas'
+    | '/profile'
+    | '/proyectos'
+    | '/reclamos'
+    | '/tipo-reclamo'
     | '/clerk'
     | '/forgot-password'
     | '/otp'
@@ -305,18 +301,17 @@ export interface FileRouteTypes {
     | '/clerk/sign-in'
     | '/clerk/sign-up'
     | '/clerk/user-management'
-    | '/audit'
     | '/brands'
-    | '/lines'
-    | '/products'
-    | '/purchases'
-    | '/sales'
-    | '/suppliers'
     | '/users'
   id:
     | '__root__'
     | '/_authenticated'
     | '/clerk'
+    | '/_authenticated/areas'
+    | '/_authenticated/profile'
+    | '/_authenticated/proyectos'
+    | '/_authenticated/reclamos'
+    | '/_authenticated/tipo-reclamo'
     | '/clerk/(auth)'
     | '/clerk/_authenticated'
     | '/(auth)/forgot-password'
@@ -334,13 +329,7 @@ export interface FileRouteTypes {
     | '/clerk/(auth)/sign-in'
     | '/clerk/(auth)/sign-up'
     | '/clerk/_authenticated/user-management'
-    | '/_authenticated/audit/'
     | '/_authenticated/brands/'
-    | '/_authenticated/lines/'
-    | '/_authenticated/products/'
-    | '/_authenticated/purchases/'
-    | '/_authenticated/sales/'
-    | '/_authenticated/suppliers/'
     | '/_authenticated/users/'
   fileRoutesById: FileRoutesById
 }
@@ -466,6 +455,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClerkauthRouteRouteImport
       parentRoute: typeof ClerkRouteRoute
     }
+    '/_authenticated/tipo-reclamo': {
+      id: '/_authenticated/tipo-reclamo'
+      path: '/tipo-reclamo'
+      fullPath: '/tipo-reclamo'
+      preLoaderRoute: typeof AuthenticatedTipoReclamoRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/reclamos': {
+      id: '/_authenticated/reclamos'
+      path: '/reclamos'
+      fullPath: '/reclamos'
+      preLoaderRoute: typeof AuthenticatedReclamosRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/proyectos': {
+      id: '/_authenticated/proyectos'
+      path: '/proyectos'
+      fullPath: '/proyectos'
+      preLoaderRoute: typeof AuthenticatedProyectosRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/profile': {
+      id: '/_authenticated/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AuthenticatedProfileRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/areas': {
+      id: '/_authenticated/areas'
+      path: '/areas'
+      fullPath: '/areas'
+      preLoaderRoute: typeof AuthenticatedAreasRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/users/': {
       id: '/_authenticated/users/'
       path: '/users'
@@ -473,53 +497,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedUsersIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/suppliers/': {
-      id: '/_authenticated/suppliers/'
-      path: '/suppliers'
-      fullPath: '/suppliers'
-      preLoaderRoute: typeof AuthenticatedSuppliersIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/sales/': {
-      id: '/_authenticated/sales/'
-      path: '/sales'
-      fullPath: '/sales'
-      preLoaderRoute: typeof AuthenticatedSalesIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/purchases/': {
-      id: '/_authenticated/purchases/'
-      path: '/purchases'
-      fullPath: '/purchases'
-      preLoaderRoute: typeof AuthenticatedPurchasesIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/products/': {
-      id: '/_authenticated/products/'
-      path: '/products'
-      fullPath: '/products'
-      preLoaderRoute: typeof AuthenticatedProductsIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/lines/': {
-      id: '/_authenticated/lines/'
-      path: '/lines'
-      fullPath: '/lines'
-      preLoaderRoute: typeof AuthenticatedLinesIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/brands/': {
       id: '/_authenticated/brands/'
       path: '/brands'
       fullPath: '/brands'
       preLoaderRoute: typeof AuthenticatedBrandsIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/audit/': {
-      id: '/_authenticated/audit/'
-      path: '/audit'
-      fullPath: '/audit'
-      preLoaderRoute: typeof AuthenticatedAuditIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/clerk/_authenticated/user-management': {
@@ -554,28 +536,26 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAreasRouteRoute: typeof AuthenticatedAreasRouteRoute
+  AuthenticatedProfileRouteRoute: typeof AuthenticatedProfileRouteRoute
+  AuthenticatedProyectosRouteRoute: typeof AuthenticatedProyectosRouteRoute
+  AuthenticatedReclamosRouteRoute: typeof AuthenticatedReclamosRouteRoute
+  AuthenticatedTipoReclamoRouteRoute: typeof AuthenticatedTipoReclamoRouteRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedErrorsErrorRoute: typeof AuthenticatedErrorsErrorRoute
-  AuthenticatedAuditIndexRoute: typeof AuthenticatedAuditIndexRoute
   AuthenticatedBrandsIndexRoute: typeof AuthenticatedBrandsIndexRoute
-  AuthenticatedLinesIndexRoute: typeof AuthenticatedLinesIndexRoute
-  AuthenticatedProductsIndexRoute: typeof AuthenticatedProductsIndexRoute
-  AuthenticatedPurchasesIndexRoute: typeof AuthenticatedPurchasesIndexRoute
-  AuthenticatedSalesIndexRoute: typeof AuthenticatedSalesIndexRoute
-  AuthenticatedSuppliersIndexRoute: typeof AuthenticatedSuppliersIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAreasRouteRoute: AuthenticatedAreasRouteRoute,
+  AuthenticatedProfileRouteRoute: AuthenticatedProfileRouteRoute,
+  AuthenticatedProyectosRouteRoute: AuthenticatedProyectosRouteRoute,
+  AuthenticatedReclamosRouteRoute: AuthenticatedReclamosRouteRoute,
+  AuthenticatedTipoReclamoRouteRoute: AuthenticatedTipoReclamoRouteRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedErrorsErrorRoute: AuthenticatedErrorsErrorRoute,
-  AuthenticatedAuditIndexRoute: AuthenticatedAuditIndexRoute,
   AuthenticatedBrandsIndexRoute: AuthenticatedBrandsIndexRoute,
-  AuthenticatedLinesIndexRoute: AuthenticatedLinesIndexRoute,
-  AuthenticatedProductsIndexRoute: AuthenticatedProductsIndexRoute,
-  AuthenticatedPurchasesIndexRoute: AuthenticatedPurchasesIndexRoute,
-  AuthenticatedSalesIndexRoute: AuthenticatedSalesIndexRoute,
-  AuthenticatedSuppliersIndexRoute: AuthenticatedSuppliersIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
 }
 

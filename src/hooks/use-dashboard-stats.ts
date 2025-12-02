@@ -4,9 +4,7 @@ import { dashboardService } from '@/services/dashboard/dashboard.service';
 export interface DashboardFilters {
   dateFrom?: Date;
   dateTo?: Date;
-  proveedorId?: number;
   marcaId?: number;
-  lineaId?: number;
 }
 
 // Función helper para serializar los filtros en el queryKey
@@ -16,9 +14,7 @@ const serializeFilters = (filters?: DashboardFilters) => {
   return {
     dateFrom: filters.dateFrom?.toISOString(),
     dateTo: filters.dateTo?.toISOString(),
-    proveedorId: filters.proveedorId,
     marcaId: filters.marcaId,
-    lineaId: filters.lineaId,
   };
 };
 

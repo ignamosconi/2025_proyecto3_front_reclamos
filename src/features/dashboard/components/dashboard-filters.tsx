@@ -18,15 +18,12 @@ import {
 } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { useMarcas } from '@/hooks/use-marcas'
-import { useLineas } from '@/hooks/use-lineas'
 import { useCallback } from 'react'
 
 export interface DashboardFilters {
   dateFrom?: Date
   dateTo?: Date
-  proveedorId?: number
   marcaId?: number
-  lineaId?: number
 }
 
 interface DashboardFiltersProps {
@@ -36,7 +33,6 @@ interface DashboardFiltersProps {
 
 export function DashboardFiltersComponent({ filters, onFiltersChange }: DashboardFiltersProps) {
   const { data: marcas } = useMarcas()
-  const { data: lineas } = useLineas()
 
   const handleDateFromChange = useCallback((date: Date | undefined) => {
     onFiltersChange({ ...filters, dateFrom: date })
@@ -53,19 +49,11 @@ export function DashboardFiltersComponent({ filters, onFiltersChange }: Dashboar
     })
   }, [filters, onFiltersChange])
 
-  const handleLineaChange = useCallback((value: string) => {
-    onFiltersChange({ 
-      ...filters, 
-      lineaId: value === 'all' ? undefined : Number(value) 
-    })
-  }, [filters, onFiltersChange])
-
   const handleClearFilters = useCallback(() => {
     onFiltersChange({})
   }, [onFiltersChange])
 
-  const hasActiveFilters = filters.dateFrom || filters.dateTo || 
-    filters.proveedorId || filters.marcaId || filters.lineaId
+  const hasActiveFilters = filters.dateFrom || filters.dateTo || filters.marcaId
 
   return (
     <div className="space-y-4 rounded-lg border p-4">
@@ -171,26 +159,6 @@ export function DashboardFiltersComponent({ filters, onFiltersChange }: Dashboar
           </Select>
         </div>
 
-        {/* Línea */}
-        <div className="space-y-2">
-          <Label htmlFor="linea">Línea</Label>
-          <Select
-            value={filters.lineaId?.toString() || 'all'}
-            onValueChange={handleLineaChange}
-          >
-            <SelectTrigger id="linea" className='w-full'>
-              <SelectValue placeholder="Todas" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas</SelectItem>
-              {lineas?.map((linea: any) => (
-                <SelectItem key={linea.id} value={linea.id.toString()}>
-                  {linea.nombre}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
       </div>
     </div>
   )

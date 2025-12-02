@@ -1,12 +1,8 @@
 import {
   LayoutDashboard,
-  ListTodo,
   Users,
   Command,
   Tag,
-  Building,
-  ShoppingBag,
-  Layers,
   FileText,
   FolderTree,
   AlertCircle,
@@ -67,34 +63,9 @@ export const sidebarData: SidebarData = {
       title: 'Catalogo',
       items: [
         {
-          title: 'Líneas de producto',
-          url: '/lines',
-          icon: ListTodo,
-        },
-        {
           title: 'Marcas',
           url: '/brands',
           icon: Tag,
-        },
-        {
-          title: 'Proveedores',
-          url: '/suppliers',
-          icon: Building,
-        },
-        {
-          title: 'Productos',
-          url: '/products',
-          icon: ShoppingBag,
-        }
-      ]
-    },
-    {
-      title: 'Sistema',
-      items: [
-        {
-          title: 'Auditoría',
-          url: '/audit',
-          icon: Layers,
         }
       ]
     }
