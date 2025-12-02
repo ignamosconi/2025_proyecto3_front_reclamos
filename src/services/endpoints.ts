@@ -73,6 +73,12 @@ export const PROYECTOS_ENDPOINTS = {
   RESTORE: (id: string) => `${API_BASE_URL}/proyectos/${id}/restore`,
 }
 
+// Endpoints de historial
+export const HISTORIAL_ENDPOINTS = {
+  GET_BY_RECLAMO: (reclamoId: string) => `${API_BASE_URL}/historial/${reclamoId}`,
+  ADD_COMENTARIO: (reclamoId: string) => `${API_BASE_URL}/historial/${reclamoId}/comentario`,
+}
+
 // Función auxiliar para crear URLs con parámetros de consulta
 export const buildQueryParams = (
   baseUrl: string,

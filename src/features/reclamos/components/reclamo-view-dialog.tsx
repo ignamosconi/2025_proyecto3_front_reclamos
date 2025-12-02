@@ -15,6 +15,7 @@ import { EstadoReclamo, Prioridad, Criticidad } from '@/services/reclamos/reclam
 import { type Reclamo } from '../data/schema'
 import { ReclamoSynthesisList } from './reclamo-synthesis-list'
 import { ReclamoImagesList } from './reclamo-images-list'
+import { ReclamoHistorialTimeline } from './reclamo-historial-timeline'
 import { useReclamos } from './reclamos-provider'
 import { useAuthStore } from '@/stores/auth-store'
 import { Settings, GitBranch } from 'lucide-react'
@@ -80,10 +81,11 @@ export function ReclamoViewDialog({
         </DialogHeader>
         
         <Tabs defaultValue='details' className='w-full'>
-          <TabsList className='grid w-full grid-cols-3'>
+          <TabsList className='grid w-full grid-cols-4'>
             <TabsTrigger value='details'>Detalles</TabsTrigger>
             <TabsTrigger value='images'>Imágenes</TabsTrigger>
             <TabsTrigger value='synthesis'>Síntesis</TabsTrigger>
+            <TabsTrigger value='historial'>Historial</TabsTrigger>
           </TabsList>
           
           <TabsContent value='details' className='space-y-4 mt-4'>
@@ -141,9 +143,12 @@ export function ReclamoViewDialog({
           <TabsContent value='images' className='mt-4'>
             <ReclamoImagesList reclamoId={currentRow._id} />
           </TabsContent>
-
           <TabsContent value='synthesis' className='mt-4'>
             <ReclamoSynthesisList reclamoId={currentRow._id} />
+          </TabsContent>
+
+          <TabsContent value='historial' className='mt-4'>
+            <ReclamoHistorialTimeline reclamoId={currentRow._id} />
           </TabsContent>
         </Tabs>
       </DialogContent>
