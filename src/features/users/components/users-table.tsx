@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   type SortingState,
   type VisibilityState,
@@ -95,9 +95,58 @@ export function UsersTable({ data, search, navigate, total, pageSize }: DataTabl
     getSortedRowModel: getSortedRowModel(),
   })
 
+  // Usar ref para rastrear el último pageCount y evitar ejecuciones innecesarias
+  const lastPageCountRef = useRef(pageCount)
+  const lastPageIndexRef = useRef(pagination.pageIndex)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+
   useEffect(() => {
-    ensurePageInRange(pageCount)
-  }, [pageCount, ensurePageInRange])
+    // Limpiar timeout anterior si existe
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+    }
+
+    // Solo verificar si tenemos datos válidos y el pageCount es válido
+    if (pageCount > 0 && total > 0) {
+      const currentPageIndex = pagination.pageIndex
+      const currentPage = currentPageIndex + 1
+      
+      // Detectar si el usuario cambió de página intencionalmente
+      const pageIndexChanged = currentPageIndex !== lastPageIndexRef.current
+      const pageCountChanged = pageCount !== lastPageCountRef.current
+      
+      // Si el usuario cambió de página, esperar un poco antes de verificar
+      // para evitar condiciones de carrera durante la carga de datos
+      if (pageIndexChanged) {
+        // Guardar el índice actual en una constante para usar en el timeout
+        const savedPageIndex = currentPageIndex
+        timeoutRef.current = setTimeout(() => {
+          // Verificar nuevamente después del delay
+          const finalPage = savedPageIndex + 1
+          if (finalPage > pageCount) {
+            ensurePageInRange(pageCount)
+          }
+        }, 150)
+      } else if (pageCountChanged && currentPage > pageCount) {
+        // Si solo cambió el pageCount (no la página), verificar inmediatamente
+        ensurePageInRange(pageCount)
+      }
+      
+      lastPageCountRef.current = pageCount
+      lastPageIndexRef.current = currentPageIndex
+    } else {
+      // Actualizar refs incluso si no hay datos válidos
+      lastPageCountRef.current = pageCount
+      lastPageIndexRef.current = pagination.pageIndex
+    }
+
+    // Cleanup timeout al desmontar
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
+    }
+  }, [pageCount, total, pagination.pageIndex, ensurePageInRange])
 
   return (
     <div
