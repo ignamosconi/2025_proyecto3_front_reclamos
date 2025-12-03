@@ -205,7 +205,7 @@ export function ResolvedClaimsByPeriodChart({ filters }: ResolvedClaimsByPeriodC
                                 borderRadius: '8px',
                                 boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
                             }}
-                            cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 1 }}
+                            cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 2, opacity: 0.3 }}
                         />
                         <Legend
                             wrapperStyle={{ paddingTop: '20px' }}

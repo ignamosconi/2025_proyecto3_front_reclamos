@@ -169,7 +169,7 @@ export function AverageResolutionTimeByTypeChart({ filters }: AverageResolutionT
                                 boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
                             }}
                             formatter={(value: number) => [`${value} días`, 'Tiempo Promedio']}
-                            cursor={{ fill: 'hsl(var(--muted))', opacity: 0.1 }}
+                            cursor={{ fill: 'hsl(var(--primary))', opacity: 0.15 }}
                         />
                         <Legend
                             wrapperStyle={{ paddingTop: '20px' }}
