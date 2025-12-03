@@ -1,13 +1,47 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ImageIcon } from 'lucide-react'
+import { ImageIcon, Loader2 } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { reclamosService } from '@/services/reclamos/reclamos.service'
 import { reclamoSchema } from '../data/schema'
 
 type ReclamoImagesListProps = {
   reclamoId: string
+}
+
+type ImageState = {
+  loading: boolean
+  error: boolean
+}
+
+// Función auxiliar para construir la URL completa si es relativa
+const getImageUrl = (url: string): string => {
+  if (!url) return ''
+  
+  // Si es un data URI (base64), retornarlo tal cual sin modificar
+  if (url.startsWith('data:')) {
+    return url
+  }
+  
+  // Si la URL ya es absoluta (empieza con http:// o https://), retornarla tal cual
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url
+  }
+  
+  // Si la URL es relativa, construir la URL completa con la base del API
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
+  
+  // Si la URL empieza con /, es relativa al dominio
+  if (url.startsWith('/')) {
+    // Extraer el dominio de la base URL
+    const baseUrl = API_BASE_URL.replace('/api', '')
+    return `${baseUrl}${url}`
+  }
+  
+  // Si no empieza con /, asumir que es relativa a la base del API
+  return `${API_BASE_URL}/${url}`
 }
 
 export function ReclamoImagesList({ reclamoId }: ReclamoImagesListProps) {
@@ -23,6 +57,42 @@ export function ReclamoImagesList({ reclamoId }: ReclamoImagesListProps) {
 
   // Images are now included in the claim response from the backend
   const images = claim?.imagenes
+
+  // Estado para manejar la carga y errores de cada imagen individualmente
+  const [imageStates, setImageStates] = useState<Record<string, ImageState>>({})
+
+  // Inicializar estados de carga cuando las imágenes cambian
+  useEffect(() => {
+    if (images && images.length > 0) {
+      const initialStates: Record<string, ImageState> = {}
+      images.forEach((imagen) => {
+        if (imagen._id && imagen.url) {
+          // Para data URIs, no necesitamos estado de carga ya que se cargan instantáneamente
+          const isDataUri = imagen.url.startsWith('data:')
+          initialStates[imagen._id] = { 
+            loading: !isDataUri, // Solo mostrar loading para URLs remotas
+            error: false 
+          }
+        }
+      })
+      setImageStates(initialStates)
+    }
+  }, [images])
+
+  const handleImageLoad = (imageId: string) => {
+    setImageStates((prev) => ({
+      ...prev,
+      [imageId]: { loading: false, error: false },
+    }))
+  }
+
+  const handleImageError = (imageId: string, imageUrl: string) => {
+    console.error('Error al cargar imagen:', imageId, imageUrl)
+    setImageStates((prev) => ({
+      ...prev,
+      [imageId]: { loading: false, error: true },
+    }))
+  }
 
   if (isLoading) {
     return (
@@ -47,6 +117,8 @@ export function ReclamoImagesList({ reclamoId }: ReclamoImagesListProps) {
   return (
     <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
       {images?.map((imagen: { _id: string; nombre: string; tipo: string; url: string; fkReclamo: string; createdAt?: Date; updatedAt?: Date }) => {
+        const imageState = imageStates[imagen._id] || { loading: false, error: false }
+
         // Debug: verificar que la imagen tenga URL
         if (!imagen.url) {
           console.warn('Imagen sin URL:', imagen)
@@ -56,27 +128,31 @@ export function ReclamoImagesList({ reclamoId }: ReclamoImagesListProps) {
           <div key={imagen._id} className='space-y-2'>
             <div className='relative aspect-video w-full overflow-hidden rounded-lg border bg-muted'>
               {imagen.url ? (
-                <img
-                  src={imagen.url}
-                  alt={imagen.nombre || 'Imagen del reclamo'}
-                  className='h-full w-full object-cover'
-                  onError={(e) => {
-                    console.error('Error al cargar imagen:', imagen.url?.substring(0, 50))
-                    // Si la imagen falla al cargar, mostrar placeholder
-                    const target = e.target as HTMLImageElement
-                    target.style.display = 'none'
-                    const parent = target.parentElement
-                    if (parent) {
-                      parent.innerHTML = `
-                        <div class="flex items-center justify-center h-full text-muted-foreground">
-                          <svg class="h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          </svg>
-                        </div>
-                      `
-                    }
-                  }}
-                />
+                <>
+                  {imageState.loading && (
+                    <div className='absolute inset-0 flex items-center justify-center bg-muted z-10'>
+                      <Loader2 className='h-8 w-8 animate-spin text-muted-foreground' />
+                    </div>
+                  )}
+                  {imageState.error && (
+                    <div className='absolute inset-0 flex flex-col items-center justify-center bg-muted z-10'>
+                      <ImageIcon className='h-12 w-12 text-muted-foreground mb-2' />
+                      <p className='text-xs text-muted-foreground text-center px-4'>
+                        Error al cargar la imagen
+                      </p>
+                    </div>
+                  )}
+                  {!imageState.error && (
+                    <img
+                      src={getImageUrl(imagen.url)}
+                      alt={imagen.nombre || 'Imagen del reclamo'}
+                      className={`h-full w-full object-cover ${imageState.loading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-200`}
+                      onLoad={() => handleImageLoad(imagen._id)}
+                      onError={() => handleImageError(imagen._id, imagen.url)}
+                      loading={imagen.url.startsWith('data:') ? 'eager' : 'lazy'}
+                    />
+                  )}
+                </>
               ) : (
                 <div className='flex items-center justify-center h-full text-muted-foreground'>
                   <ImageIcon className='h-12 w-12' />
