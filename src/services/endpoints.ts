@@ -94,6 +94,7 @@ export const ENCUESTA_ENDPOINTS = {
 export const DASHBOARD_ENDPOINTS = {
   CLIENT_METRICS: `${API_BASE_URL}/dashboard/cliente`,
   ENCARGADO_METRICS: `${API_BASE_URL}/dashboard/encargado`,
+  GERENTE_METRICS: `${API_BASE_URL}/dashboard/gerente`,
 }
 
 // Función auxiliar para crear URLs con parámetros de consulta

@@ -19,13 +19,14 @@ import {
 } from '@/components/ui/select'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 import { useCallback, useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { proyectosService } from '@/services/proyectos/proyectos.service'
 import { usersService } from '@/services/users/users.service'
 import { tipoReclamoService } from '@/services/tipo-reclamo/tipo-reclamo.service'
 import { areasService } from '@/services/areas/areas.service'
-import { EstadoReclamo } from '@/services/reclamos/reclamos.service'
+import { EstadoReclamo, Criticidad } from '@/services/reclamos/reclamos.service'
 import { useAuthStore } from '@/stores/auth-store'
 import type { DashboardFilters } from '@/hooks/use-dashboard-stats'
 
@@ -37,42 +38,44 @@ interface DashboardFiltersProps {
   onFiltersChange: (filters: DashboardFilters) => void
   showClientFilters?: boolean
   showEncargadoFilters?: boolean
+  showGerenteFilters?: boolean
 }
 
-export function DashboardFiltersComponent({ 
-  filters, 
+export function DashboardFiltersComponent({
+  filters,
   onFiltersChange,
   showClientFilters = false,
   showEncargadoFilters = false,
+  showGerenteFilters = false,
 }: DashboardFiltersProps) {
   const { auth } = useAuthStore()
   const [dateFilterMode, setDateFilterMode] = useState<'range' | 'single'>('range')
-  
+
   // Fetch projects for client
   const { data: proyectosData } = useQuery({
     queryKey: ['proyectos', 'cliente', auth.user?.id],
-    queryFn: () => proyectosService.getAll({ 
+    queryFn: () => proyectosService.getAll({
       cliente: auth.user?.id,
-      limit: 100 
+      limit: 100
     }),
     enabled: showClientFilters && !!auth.user?.id,
   })
 
-  // Fetch all projects for encargado
+  // Fetch all projects for encargado and gerente
   const { data: allProyectosData } = useQuery({
     queryKey: ['proyectos', 'all'],
-    queryFn: () => proyectosService.getAll({ 
-      limit: 100 
+    queryFn: () => proyectosService.getAll({
+      limit: 100
     }),
-    enabled: showEncargadoFilters,
+    enabled: showEncargadoFilters || showGerenteFilters,
   })
 
   // Fetch clients for encargado
   const { data: clientesData } = useQuery({
     queryKey: ['users', 'clientes'],
-    queryFn: () => usersService.getAll({ 
+    queryFn: () => usersService.getAll({
       role: 'Cliente',
-      limit: 100 
+      limit: 100
     }),
     enabled: showEncargadoFilters,
   })
@@ -80,8 +83,8 @@ export function DashboardFiltersComponent({
   // Fetch tipo reclamos
   const { data: tipoReclamosData } = useQuery({
     queryKey: ['tipo-reclamos', 'all'],
-    queryFn: () => tipoReclamoService.getAll({ 
-      limit: 100 
+    queryFn: () => tipoReclamoService.getAll({
+      limit: 100
     }),
     enabled: showEncargadoFilters,
   })
@@ -89,15 +92,28 @@ export function DashboardFiltersComponent({
   // Fetch areas
   const { data: areasData } = useQuery({
     queryKey: ['areas', 'all'],
-    queryFn: () => areasService.getAll({ 
-      limit: 100 
+    queryFn: () => areasService.getAll({
+      limit: 100
     }),
     enabled: showEncargadoFilters,
   })
 
-  const proyectos = showClientFilters ? (proyectosData?.data || []) : (allProyectosData?.data || [])
+  // Fetch tipo reclamos for gerente
+  const { data: tipoReclamosGerenteData } = useQuery({
+    queryKey: ['tipo-reclamos', 'gerente'],
+    queryFn: () => tipoReclamoService.getAll({
+      limit: 100
+    }),
+    enabled: showGerenteFilters,
+  })
+
+  const proyectos = showClientFilters
+    ? (proyectosData?.data || [])
+    : (allProyectosData?.data || [])
   const clientes = clientesData?.data || []
-  const tipoReclamos = tipoReclamosData?.data || []
+  const tipoReclamos = showEncargadoFilters
+    ? (tipoReclamosData?.data || [])
+    : (tipoReclamosGerenteData?.data || [])
   const areas = areasData?.data || []
 
   useEffect(() => {
@@ -123,11 +139,11 @@ export function DashboardFiltersComponent({
 
   const handleSpecificDayChange = useCallback((date: Date | undefined) => {
     if (dateFilterMode === 'single') {
-      onFiltersChange({ 
-        ...filters, 
+      onFiltersChange({
+        ...filters,
         specificDay: date,
         dateFrom: undefined,
-        dateTo: undefined 
+        dateTo: undefined
       })
     }
   }, [filters, onFiltersChange, dateFilterMode])
@@ -135,51 +151,70 @@ export function DashboardFiltersComponent({
   const handleDateModeChange = useCallback((mode: 'range' | 'single') => {
     setDateFilterMode(mode)
     if (mode === 'single') {
-      onFiltersChange({ 
-        ...filters, 
-        dateFrom: undefined, 
-        dateTo: undefined 
+      onFiltersChange({
+        ...filters,
+        dateFrom: undefined,
+        dateTo: undefined
       })
     } else {
-      onFiltersChange({ 
-        ...filters, 
-        specificDay: undefined 
+      onFiltersChange({
+        ...filters,
+        specificDay: undefined
       })
     }
   }, [filters, onFiltersChange])
 
   const handleProjectChange = useCallback((proyectoId: string) => {
-    onFiltersChange({ 
-      ...filters, 
-      proyectoId: proyectoId === 'all' ? undefined : proyectoId 
+    onFiltersChange({
+      ...filters,
+      proyectoId: proyectoId === 'all' ? undefined : proyectoId
     })
   }, [filters, onFiltersChange])
 
   const handleClienteChange = useCallback((clienteId: string) => {
-    onFiltersChange({ 
-      ...filters, 
-      clienteId: clienteId === 'all' ? undefined : clienteId 
+    onFiltersChange({
+      ...filters,
+      clienteId: clienteId === 'all' ? undefined : clienteId
     })
   }, [filters, onFiltersChange])
 
   const handleTipoReclamoChange = useCallback((tipoReclamoId: string) => {
-    onFiltersChange({ 
-      ...filters, 
-      tipoReclamoId: tipoReclamoId === 'all' ? undefined : tipoReclamoId 
+    onFiltersChange({
+      ...filters,
+      tipoReclamoId: tipoReclamoId === 'all' ? undefined : tipoReclamoId
     })
   }, [filters, onFiltersChange])
 
   const handleEstadoChange = useCallback((estado: string) => {
-    onFiltersChange({ 
-      ...filters, 
+    onFiltersChange({
+      ...filters,
       estado: estado === 'all' ? undefined : estado as EstadoReclamo
     })
   }, [filters, onFiltersChange])
 
   const handleAreaChange = useCallback((areaId: string) => {
-    onFiltersChange({ 
-      ...filters, 
-      areaId: areaId === 'all' ? undefined : areaId 
+    onFiltersChange({
+      ...filters,
+      areaId: areaId === 'all' ? undefined : areaId
+    })
+  }, [filters, onFiltersChange])
+
+  const handleTopLimitChange = useCallback((value: string) => {
+    const topLimit = value === '' ? undefined : parseInt(value, 10)
+    // Validate topLimit is between 1 and 100
+    if (topLimit !== undefined && (topLimit < 1 || topLimit > 100)) {
+      return
+    }
+    onFiltersChange({
+      ...filters,
+      topLimit
+    })
+  }, [filters, onFiltersChange])
+
+  const handleCriticidadChange = useCallback((criticidad: string) => {
+    onFiltersChange({
+      ...filters,
+      criticidad: criticidad === 'all' ? undefined : criticidad as Criticidad
     })
   }, [filters, onFiltersChange])
 
@@ -188,9 +223,9 @@ export function DashboardFiltersComponent({
     setDateFilterMode('range')
   }, [onFiltersChange])
 
-  const hasActiveFilters = filters.dateFrom || filters.dateTo || filters.specificDay || 
-    filters.proyectoId || filters.clienteId || filters.tipoReclamoId || 
-    filters.estado || filters.areaId
+  const hasActiveFilters = filters.dateFrom || filters.dateTo || filters.specificDay ||
+    filters.proyectoId || filters.clienteId || filters.tipoReclamoId ||
+    filters.estado || filters.areaId || filters.topLimit !== undefined || filters.criticidad
 
   return (
     <Card className="shadow-sm">
@@ -227,187 +262,146 @@ export function DashboardFiltersComponent({
       </CardHeader>
       <CardContent className="space-y-4 pt-0">
 
-      {(showClientFilters || showEncargadoFilters) && (
-        <div className="space-y-2">
-          <Label>Modo de filtrado de fechas</Label>
-          <RadioGroup
-            value={dateFilterMode}
-            onValueChange={(value) => handleDateModeChange(value as 'range' | 'single')}
-            className="flex gap-4"
-          >
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="range" id="range" />
-              <Label htmlFor="range" className="cursor-pointer font-normal">
-                Rango de fechas
-              </Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="single" id="single" />
-              <Label htmlFor="single" className="cursor-pointer font-normal">
-                Día específico
-              </Label>
-            </div>
-          </RadioGroup>
-        </div>
-      )}
-
-      <div className="grid gap-4 sm:grid-cols-2">
-        {dateFilterMode === 'range' ? (
-          <>
-            {/* Fecha Desde */}
-            <div className="space-y-2">
-              <Label htmlFor="date-from">Fecha desde</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    id="date-from"
-                    variant="outline"
-                    className={cn(
-                      'w-full justify-start text-left font-normal',
-                      !filters.dateFrom && 'text-muted-foreground'
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {filters.dateFrom ? (
-                      format(filters.dateFrom, 'PPP', { locale: es })
-                    ) : (
-                      <span>Seleccionar</span>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={filters.dateFrom}
-                    onSelect={handleDateFromChange}
-                    initialFocus
-                    locale={es}
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-
-            {/* Fecha Hasta */}
-            <div className="space-y-2">
-              <Label htmlFor="date-to">Fecha hasta</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    id="date-to"
-                    variant="outline"
-                    className={cn(
-                      'w-full justify-start text-left font-normal',
-                      !filters.dateTo && 'text-muted-foreground'
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {filters.dateTo ? (
-                      format(filters.dateTo, 'PPP', { locale: es })
-                    ) : (
-                      <span>Seleccionar</span>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={filters.dateTo}
-                    onSelect={handleDateToChange}
-                    initialFocus
-                    locale={es}
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-          </>
-        ) : (
+        {(showClientFilters || showEncargadoFilters || showGerenteFilters) && (
           <div className="space-y-2">
-            <Label htmlFor="specific-day">Día específico</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  id="specific-day"
-                  variant="outline"
-                  className={cn(
-                    'w-full justify-start text-left font-normal',
-                    !filters.specificDay && 'text-muted-foreground'
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {filters.specificDay ? (
-                    format(filters.specificDay, 'PPP', { locale: es })
-                  ) : (
-                    <span>Seleccionar</span>
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={filters.specificDay}
-                  onSelect={handleSpecificDayChange}
-                  initialFocus
-                  locale={es}
-                />
-              </PopoverContent>
-            </Popover>
+            <Label>Modo de filtrado de fechas</Label>
+            <RadioGroup
+              value={dateFilterMode}
+              onValueChange={(value) => handleDateModeChange(value as 'range' | 'single')}
+              className="flex gap-4"
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="range" id="range" disabled={showGerenteFilters} />
+                <Label htmlFor="range" className="cursor-pointer font-normal">
+                  Rango de fechas
+                </Label>
+              </div>
+              {!showGerenteFilters && (
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="single" id="single" />
+                  <Label htmlFor="single" className="cursor-pointer font-normal">
+                    Día específico
+                  </Label>
+                </div>
+              )}
+            </RadioGroup>
           </div>
         )}
-      </div>
 
-      {(showClientFilters || showEncargadoFilters) && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {showClientFilters && (
-            <div className="space-y-2">
-              <Label htmlFor="proyecto-filter">Filtrar por proyecto (gráfico de estados)</Label>
-              <Select
-                value={filters.proyectoId || 'all'}
-                onValueChange={handleProjectChange}
-              >
-                <SelectTrigger id="proyecto-filter" className="w-full">
-                  <SelectValue placeholder="Todos los proyectos" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos los proyectos</SelectItem>
-                  {proyectos.map((proyecto) => (
-                    <SelectItem key={proyecto._id} value={proyecto._id}>
-                      {proyecto.nombre}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-
-          {showEncargadoFilters && (
+        <div className="grid gap-4 sm:grid-cols-2">
+          {dateFilterMode === 'range' ? (
             <>
+              {/* Fecha Desde */}
               <div className="space-y-2">
-                <Label htmlFor="cliente-filter">Cliente</Label>
-                <Select
-                  value={filters.clienteId || 'all'}
-                  onValueChange={handleClienteChange}
-                >
-                  <SelectTrigger id="cliente-filter" className="w-full">
-                    <SelectValue placeholder="Todos los clientes" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos los clientes</SelectItem>
-                    {clientes.map((cliente) => (
-                      <SelectItem key={cliente._id} value={cliente._id}>
-                        {cliente.firstName} {cliente.lastName}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="date-from">Fecha desde</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      id="date-from"
+                      variant="outline"
+                      className={cn(
+                        'w-full justify-start text-left font-normal',
+                        !filters.dateFrom && 'text-muted-foreground'
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {filters.dateFrom ? (
+                        format(filters.dateFrom, 'PPP', { locale: es })
+                      ) : (
+                        <span>Seleccionar</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={filters.dateFrom}
+                      onSelect={handleDateFromChange}
+                      initialFocus
+                      locale={es}
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
 
+              {/* Fecha Hasta */}
               <div className="space-y-2">
-                <Label htmlFor="proyecto-filter-encargado">Proyecto</Label>
+                <Label htmlFor="date-to">Fecha hasta</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      id="date-to"
+                      variant="outline"
+                      className={cn(
+                        'w-full justify-start text-left font-normal',
+                        !filters.dateTo && 'text-muted-foreground'
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {filters.dateTo ? (
+                        format(filters.dateTo, 'PPP', { locale: es })
+                      ) : (
+                        <span>Seleccionar</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={filters.dateTo}
+                      onSelect={handleDateToChange}
+                      initialFocus
+                      locale={es}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </>
+          ) : (
+            <div className="space-y-2">
+              <Label htmlFor="specific-day">Día específico</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    id="specific-day"
+                    variant="outline"
+                    className={cn(
+                      'w-full justify-start text-left font-normal',
+                      !filters.specificDay && 'text-muted-foreground'
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {filters.specificDay ? (
+                      format(filters.specificDay, 'PPP', { locale: es })
+                    ) : (
+                      <span>Seleccionar</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={filters.specificDay}
+                    onSelect={handleSpecificDayChange}
+                    initialFocus
+                    locale={es}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+          )}
+        </div>
+
+        {(showClientFilters || showEncargadoFilters) && (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {showClientFilters && (
+              <div className="space-y-2">
+                <Label htmlFor="proyecto-filter">Filtrar por proyecto (gráfico de estados)</Label>
                 <Select
                   value={filters.proyectoId || 'all'}
                   onValueChange={handleProjectChange}
                 >
-                  <SelectTrigger id="proyecto-filter-encargado" className="w-full">
+                  <SelectTrigger id="proyecto-filter" className="w-full">
                     <SelectValue placeholder="Todos los proyectos" />
                   </SelectTrigger>
                   <SelectContent>
@@ -420,70 +414,215 @@ export function DashboardFiltersComponent({
                   </SelectContent>
                 </Select>
               </div>
+            )}
 
-              <div className="space-y-2">
-                <Label htmlFor="tipo-reclamo-filter">Tipo de Reclamo</Label>
-                <Select
-                  value={filters.tipoReclamoId || 'all'}
-                  onValueChange={handleTipoReclamoChange}
-                >
-                  <SelectTrigger id="tipo-reclamo-filter" className="w-full">
-                    <SelectValue placeholder="Todos los tipos" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos los tipos</SelectItem>
-                    {tipoReclamos.map((tipo) => (
-                      <SelectItem key={tipo._id} value={tipo._id}>
-                        {tipo.nombre}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+            {showEncargadoFilters && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="cliente-filter">Cliente</Label>
+                  <Select
+                    value={filters.clienteId || 'all'}
+                    onValueChange={handleClienteChange}
+                  >
+                    <SelectTrigger id="cliente-filter" className="w-full">
+                      <SelectValue placeholder="Todos los clientes" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos los clientes</SelectItem>
+                      {clientes.map((cliente) => (
+                        <SelectItem key={cliente._id} value={cliente._id}>
+                          {cliente.firstName} {cliente.lastName}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="estado-filter">Estado</Label>
-                <Select
-                  value={filters.estado || 'all'}
-                  onValueChange={handleEstadoChange}
-                >
-                  <SelectTrigger id="estado-filter" className="w-full">
-                    <SelectValue placeholder="Todos los estados" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos los estados</SelectItem>
-                    {Object.values(EstadoReclamo).map((estado) => (
-                      <SelectItem key={estado} value={estado}>
-                        {estado}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                <div className="space-y-2">
+                  <Label htmlFor="proyecto-filter-encargado">Proyecto</Label>
+                  <Select
+                    value={filters.proyectoId || 'all'}
+                    onValueChange={handleProjectChange}
+                  >
+                    <SelectTrigger id="proyecto-filter-encargado" className="w-full">
+                      <SelectValue placeholder="Todos los proyectos" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos los proyectos</SelectItem>
+                      {proyectos.map((proyecto) => (
+                        <SelectItem key={proyecto._id} value={proyecto._id}>
+                          {proyecto.nombre}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="area-filter">Área</Label>
-                <Select
-                  value={filters.areaId || 'all'}
-                  onValueChange={handleAreaChange}
-                >
-                  <SelectTrigger id="area-filter" className="w-full">
-                    <SelectValue placeholder="Todas las áreas" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todas las áreas</SelectItem>
-                    {areas.map((area) => (
-                      <SelectItem key={area._id} value={area._id}>
-                        {area.nombre}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </>
-          )}
-        </div>
-      )}
+                <div className="space-y-2">
+                  <Label htmlFor="tipo-reclamo-filter">Tipo de Reclamo</Label>
+                  <Select
+                    value={filters.tipoReclamoId || 'all'}
+                    onValueChange={handleTipoReclamoChange}
+                  >
+                    <SelectTrigger id="tipo-reclamo-filter" className="w-full">
+                      <SelectValue placeholder="Todos los tipos" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos los tipos</SelectItem>
+                      {tipoReclamos.map((tipo) => (
+                        <SelectItem key={tipo._id} value={tipo._id}>
+                          {tipo.nombre}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="estado-filter">Estado</Label>
+                  <Select
+                    value={filters.estado || 'all'}
+                    onValueChange={handleEstadoChange}
+                  >
+                    <SelectTrigger id="estado-filter" className="w-full">
+                      <SelectValue placeholder="Todos los estados" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos los estados</SelectItem>
+                      {Object.values(EstadoReclamo).map((estado) => (
+                        <SelectItem key={estado} value={estado}>
+                          {estado}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="area-filter">Área</Label>
+                  <Select
+                    value={filters.areaId || 'all'}
+                    onValueChange={handleAreaChange}
+                  >
+                    <SelectTrigger id="area-filter" className="w-full">
+                      <SelectValue placeholder="Todas las áreas" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todas las áreas</SelectItem>
+                      {areas.map((area) => (
+                        <SelectItem key={area._id} value={area._id}>
+                          {area.nombre}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
+            )}
+
+          </div>
+        )}
+
+        {showGerenteFilters && (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="space-y-2">
+              <Label htmlFor="proyecto-filter-gerente">Proyecto</Label>
+              <Select
+                value={filters.proyectoId || 'all'}
+                onValueChange={handleProjectChange}
+              >
+                <SelectTrigger id="proyecto-filter-gerente" className="w-full">
+                  <SelectValue placeholder="Todos los proyectos" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los proyectos</SelectItem>
+                  {proyectos.map((proyecto) => (
+                    <SelectItem key={proyecto._id} value={proyecto._id}>
+                      {proyecto.nombre}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="estado-filter-gerente">Estado</Label>
+              <Select
+                value={filters.estado || 'all'}
+                onValueChange={handleEstadoChange}
+              >
+                <SelectTrigger id="estado-filter-gerente" className="w-full">
+                  <SelectValue placeholder="Todos los estados" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los estados</SelectItem>
+                  {Object.values(EstadoReclamo).map((estado) => (
+                    <SelectItem key={estado} value={estado}>
+                      {estado}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="tipo-reclamo-filter-gerente">Tipo de Reclamo</Label>
+              <Select
+                value={filters.tipoReclamoId || 'all'}
+                onValueChange={handleTipoReclamoChange}
+              >
+                <SelectTrigger id="tipo-reclamo-filter-gerente" className="w-full">
+                  <SelectValue placeholder="Todos los tipos" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los tipos</SelectItem>
+                  {tipoReclamos.map((tipo) => (
+                    <SelectItem key={tipo._id} value={tipo._id}>
+                      {tipo.nombre}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="criticidad-filter-gerente">Criticidad</Label>
+              <Select
+                value={filters.criticidad || 'all'}
+                onValueChange={handleCriticidadChange}
+              >
+                <SelectTrigger id="criticidad-filter-gerente" className="w-full">
+                  <SelectValue placeholder="Todas las criticidades" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas las criticidades</SelectItem>
+                  {Object.values(Criticidad).map((criticidad) => (
+                    <SelectItem key={criticidad} value={criticidad}>
+                      {criticidad}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="top-limit-filter">Top Empleados (1-100)</Label>
+              <Input
+                id="top-limit-filter"
+                type="number"
+                min="1"
+                max="100"
+                placeholder="10"
+                value={filters.topLimit ?? ''}
+                onChange={(e) => handleTopLimitChange(e.target.value)}
+                className="w-full"
+              />
+              <p className="text-xs text-muted-foreground">
+                Cantidad de empleados a mostrar en los rankings (default: 10)
+              </p>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   )
