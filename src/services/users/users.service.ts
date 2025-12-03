@@ -103,4 +103,10 @@ export const usersService = {
     });
     return response.data;
   },
+
+  // Obtener encargados de un área
+  async getEncargadosByArea(areaId: string): Promise<User[]> {
+    const response = await api.get(USERS_ENDPOINTS.GET_ENCARGADOS_BY_AREA(areaId));
+    return response.data;
+  },
 };

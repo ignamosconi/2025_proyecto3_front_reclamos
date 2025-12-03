@@ -19,6 +19,7 @@ export const USERS_ENDPOINTS = {
   GET_ALL: `${API_BASE_URL}/users`,
   GET_BY_ID: (id: string) => `${API_BASE_URL}/users/id/${id}`,
   GET_BY_EMAIL: (email: string) => `${API_BASE_URL}/users/email/${email}`,
+  GET_ENCARGADOS_BY_AREA: (areaId: string) => `${API_BASE_URL}/users/encargados/area/${areaId}`,
   UPDATE_PROFILE: `${API_BASE_URL}/users/profile`,
   REGISTER_STAFF: `${API_BASE_URL}/users/register-staff`,
   REGISTER_CLIENT: `${API_BASE_URL}/users/register-client`,
@@ -59,6 +60,8 @@ export const RECLAMOS_ENDPOINTS = {
   REASSIGN_AREA: (id: string, nuevaAreaId: string) => `${API_BASE_URL}/reclamos/${id}/reassign-area/${nuevaAreaId}`,
   AUTO_ASSIGN: (id: string) => `${API_BASE_URL}/reclamos/${id}/encargados/auto-assign`,
   GET_ENCARGADOS: (id: string) => `${API_BASE_URL}/reclamos/${id}/encargados`,
+  ADD_ENCARGADO: (id: string) => `${API_BASE_URL}/reclamos/${id}/encargados`,
+  REMOVE_ENCARGADO: (id: string) => `${API_BASE_URL}/reclamos/${id}/encargados`,
   GET_SYNTHESIS: (reclamoId: string) =>
     `${API_BASE_URL}/reclamos/${reclamoId}/sintesis`,
   GET_SYNTHESIS_BY_ID: (reclamoId: string, sintesisId: string) =>

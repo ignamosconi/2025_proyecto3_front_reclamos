@@ -16,10 +16,11 @@ import { type Reclamo } from '../data/schema'
 import { ReclamoSynthesisList } from './reclamo-synthesis-list'
 import { ReclamoImagesList } from './reclamo-images-list'
 import { ReclamoHistorialTimeline } from './reclamo-historial-timeline'
+import { ReclamoManageEncargadosDialog } from './reclamo-manage-encargados-dialog'
 import { EncuestaDisplay } from '@/features/encuesta/components/encuesta-display'
 import { useReclamos } from './reclamos-provider'
 import { useAuthStore } from '@/stores/auth-store'
-import { Settings, GitBranch, UserPlus } from 'lucide-react'
+import { Settings, GitBranch, UserPlus, Users } from 'lucide-react'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { encuestaService } from '@/services/encuesta/encuesta.service'
 import { useQueryClient } from '@tanstack/react-query'
@@ -48,6 +49,7 @@ export function ReclamoViewDialog({
   const isFinalState = currentRow.estado === EstadoReclamo.RESUELTO || currentRow.estado === EstadoReclamo.RECHAZADO
 
   const [encargados, setEncargados] = useState<any[]>([])
+  const [showManageEncargados, setShowManageEncargados] = useState(false)
 
   // Fetch survey if claim is in final state
   const { data: encuesta, isLoading: isLoadingEncuesta } = useQuery({
@@ -98,6 +100,25 @@ export function ReclamoViewDialog({
 
   const handleAutoAssign = () => {
     autoAssignMutation.mutate()
+  }
+
+  const handleManageEncargados = () => {
+    setShowManageEncargados(true)
+  }
+
+  // Verificar si el usuario está asignado al reclamo
+  const isAssignedToReclamo = () => {
+    console.log('Encargados asignados:', encargados)
+    if (!isStaff || !auth.user || !encargados || encargados.length === 0) return false
+    
+    // Verificar si el usuario actual está en la lista de encargados asignados
+    const currentUserId = auth.user.id
+    return encargados.some((asig: any) => {
+      const asigId = typeof asig.fkEncargado === 'string' 
+        ? asig.fkEncargado 
+        : asig.fkEncargado?._id
+      return asigId === currentUserId
+    })
   }
 
   // Verificar si el usuario puede autoasignarse
@@ -155,6 +176,17 @@ export function ReclamoViewDialog({
                   >
                     <UserPlus className='h-4 w-4' />
                     {autoAssignMutation.isPending ? 'Asignando...' : 'Asignarme'}
+                  </Button>
+                )}
+                {currentRow.estado === EstadoReclamo.EN_REVISION && isAssignedToReclamo() && (
+                  <Button
+                    variant='outline'
+                    size='sm'
+                    onClick={handleManageEncargados}
+                    className='gap-2'
+                  >
+                    <Users className='h-4 w-4' />
+                    Gestionar encargados
                   </Button>
                 )}
                 <Button
@@ -276,6 +308,16 @@ export function ReclamoViewDialog({
           )}
         </Tabs>
       </DialogContent>
+
+      {/* Dialog para gestionar encargados */}
+      {showManageEncargados && auth.user?.id && (
+        <ReclamoManageEncargadosDialog
+          open={showManageEncargados}
+          onOpenChange={setShowManageEncargados}
+          reclamo={currentRow as any}
+          currentUserId={auth.user.id}
+        />
+      )}
     </Dialog>
   )
 }

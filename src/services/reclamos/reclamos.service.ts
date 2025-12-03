@@ -202,5 +202,19 @@ export const reclamosService = {
     const response = await api.get(RECLAMOS_ENDPOINTS.GET_ENCARGADOS(reclamoId));
     return response.data;
   },
+
+  // Añadir un encargado adicional al reclamo (US 12)
+  async addEncargado(reclamoId: string, encargadoId: string): Promise<{ message: string }> {
+    const response = await api.post(RECLAMOS_ENDPOINTS.ADD_ENCARGADO(reclamoId), { encargadoId });
+    return response.data;
+  },
+
+  // Eliminar un encargado del reclamo (US 12)
+  async removeEncargado(reclamoId: string, encargadoId: string): Promise<{ message: string }> {
+    const response = await api.delete(RECLAMOS_ENDPOINTS.REMOVE_ENCARGADO(reclamoId), {
+      data: { encargadoId }
+    });
+    return response.data;
+  },
 };
 

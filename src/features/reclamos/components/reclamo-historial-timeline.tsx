@@ -231,8 +231,10 @@ export function ReclamoHistorialTimeline({ reclamoId }: ReclamoHistorialTimeline
                       </p>
                     </div>
 
-                    {/* Metadata (si existe) */}
-                    {evento.metadata && Object.keys(evento.metadata).length > 0 && (
+                    {/* Metadata (si existe) - Ocultar para agregar/eliminar encargados */}
+                    {evento.metadata && Object.keys(evento.metadata).length > 0 && 
+                     evento.accion !== AccionesHistorial.AGREGAR_ENCARGADO &&
+                     evento.accion !== AccionesHistorial.ELIMINAR_ENCARGADO && (
                       <div className='space-y-2'>
                         <p className='text-xs font-medium text-muted-foreground'>
                           Información adicional:
