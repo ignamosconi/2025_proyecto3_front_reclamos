@@ -181,22 +181,22 @@ export function ResolvedClaimsByPeriodChart({ filters }: ResolvedClaimsByPeriodC
                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
                         <XAxis
                             dataKey="periodo"
-                            stroke="hsl(var(--muted-foreground))"
+                            stroke="hsl(var(--foreground))"
                             fontSize={11}
                             tickLine={false}
                             axisLine={false}
                             angle={-45}
                             textAnchor="end"
                             height={80}
-                            tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                            tick={{ fill: 'hsl(var(--foreground))' }}
                         />
                         <YAxis
-                            stroke="hsl(var(--muted-foreground))"
+                            stroke="hsl(var(--foreground))"
                             fontSize={12}
                             tickLine={false}
                             axisLine={false}
                             width={60}
-                            tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                            tick={{ fill: 'hsl(var(--foreground))' }}
                         />
                         <Tooltip
                             contentStyle={{
@@ -208,7 +208,7 @@ export function ResolvedClaimsByPeriodChart({ filters }: ResolvedClaimsByPeriodC
                             cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 2, opacity: 0.3 }}
                         />
                         <Legend
-                            wrapperStyle={{ paddingTop: '20px' }}
+                            wrapperStyle={{ paddingTop: '20px', color: 'hsl(var(--foreground))' }}
                             iconType="line"
                         />
                         <Line

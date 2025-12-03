@@ -159,22 +159,22 @@ export function ClaimsPerMonthChart({ filters }: ClaimsPerMonthChartProps) {
                     <BarChart data={formattedData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
                         <XAxis
                             dataKey="mes"
-                            stroke="hsl(var(--muted-foreground))"
+                            stroke="hsl(var(--foreground))"
                             fontSize={11}
                             tickLine={false}
                             axisLine={false}
                             angle={-45}
                             textAnchor="end"
                             height={80}
-                            tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                            tick={{ fill: 'hsl(var(--foreground))' }}
                         />
                         <YAxis
-                            stroke="hsl(var(--muted-foreground))"
+                            stroke="hsl(var(--foreground))"
                             fontSize={12}
                             tickLine={false}
                             axisLine={false}
                             width={60}
-                            tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                            tick={{ fill: 'hsl(var(--foreground))' }}
                         />
                         <Tooltip
                             contentStyle={{
@@ -186,7 +186,7 @@ export function ClaimsPerMonthChart({ filters }: ClaimsPerMonthChartProps) {
                             cursor={{ fill: 'hsl(var(--primary))', opacity: 0.15 }}
                         />
                         <Legend
-                            wrapperStyle={{ paddingTop: '20px' }}
+                            wrapperStyle={{ paddingTop: '20px', color: 'hsl(var(--foreground))' }}
                             iconType="square"
                         />
                         <Bar

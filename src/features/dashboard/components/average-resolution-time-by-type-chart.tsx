@@ -144,22 +144,22 @@ export function AverageResolutionTimeByTypeChart({ filters }: AverageResolutionT
                     <BarChart data={formattedData} layout="vertical" margin={{ top: 10, right: 10, left: 120, bottom: 10 }}>
                         <XAxis
                             type="number"
-                            stroke="hsl(var(--muted-foreground))"
+                            stroke="hsl(var(--foreground))"
                             fontSize={12}
                             tickLine={false}
                             axisLine={false}
-                            tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                            label={{ value: 'Días', position: 'insideBottom', offset: -5 }}
+                            tick={{ fill: 'hsl(var(--foreground))' }}
+                            label={{ value: 'Días', position: 'insideBottom', offset: -5, style: { fill: 'hsl(var(--foreground))' } }}
                         />
                         <YAxis
                             type="category"
                             dataKey="tipo"
-                            stroke="hsl(var(--muted-foreground))"
+                            stroke="hsl(var(--foreground))"
                             fontSize={11}
                             tickLine={false}
                             axisLine={false}
                             width={110}
-                            tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                            tick={{ fill: 'hsl(var(--foreground))' }}
                         />
                         <Tooltip
                             contentStyle={{
@@ -172,7 +172,7 @@ export function AverageResolutionTimeByTypeChart({ filters }: AverageResolutionT
                             cursor={{ fill: 'hsl(var(--primary))', opacity: 0.15 }}
                         />
                         <Legend
-                            wrapperStyle={{ paddingTop: '20px' }}
+                            wrapperStyle={{ paddingTop: '20px', color: 'hsl(var(--foreground))' }}
                             iconType="square"
                         />
                         <Bar
