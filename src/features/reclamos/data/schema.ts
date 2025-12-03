@@ -36,6 +36,18 @@ const imagenSchema = z.object({
   updatedAt: z.coerce.date().optional(),
 })
 
+// Helper para transformar fk que pueden venir como string o objeto
+const fkTransform = z.preprocess(
+  (val) => {
+    if (typeof val === 'string') return val
+    if (typeof val === 'object' && val !== null && '_id' in val) {
+      return (val as { _id: string })._id
+    }
+    return val
+  },
+  z.string()
+)
+
 export const reclamoSchema = z.object({
   _id: z.string(),
   titulo: z.string(),
@@ -43,10 +55,11 @@ export const reclamoSchema = z.object({
   prioridad: z.nativeEnum(Prioridad),
   criticidad: z.nativeEnum(Criticidad),
   estado: z.nativeEnum(EstadoReclamo),
-  fkCliente: z.string(),
-  fkProyecto: z.string(),
-  fkTipoReclamo: z.string(),
-  fkArea: z.string(),
+  // Aceptar tanto string como objeto (con _id) y transformar a string
+  fkCliente: fkTransform,
+  fkProyecto: fkTransform,
+  fkTipoReclamo: fkTransform,
+  fkArea: fkTransform,
   createdAt: z.union([z.string(), z.date()]).transform((val) => typeof val === 'string' ? new Date(val) : val),
   updatedAt: z.union([z.string(), z.date()]).transform((val) => typeof val === 'string' ? new Date(val) : val),
   encargados: z.array(z.any()).optional(),
