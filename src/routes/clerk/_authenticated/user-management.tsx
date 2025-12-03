@@ -89,7 +89,13 @@ function UserManagement() {
               <UsersPrimaryButtons />
             </div>
             <div className='-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-y-0 lg:space-x-12'>
-              <UsersTable data={[]} navigate={navigate} search={search} />
+              <UsersTable 
+                data={[]} 
+                navigate={navigate} 
+                search={search}
+                total={0}
+                pageSize={10}
+              />
             </div>
           </Main>
 
