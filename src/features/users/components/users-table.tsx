@@ -1,13 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   type SortingState,
   type VisibilityState,
   flexRender,
   getCoreRowModel,
-  getFacetedRowModel,
-  getFacetedUniqueValues,
   getFilteredRowModel,
-  getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
@@ -30,17 +27,15 @@ type DataTableProps = {
   data: User[]
   search: Record<string, unknown>
   navigate: NavigateFn
+  total: number
+  pageSize: number
 }
 
-export function UsersTable({ data, search, navigate }: DataTableProps) {
+export function UsersTable({ data, search, navigate, total, pageSize }: DataTableProps) {
   // Local UI-only states
   const [rowSelection, setRowSelection] = useState({})
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [sorting, setSorting] = useState<SortingState>([])
-
-  // Local state management for table (uncomment to use local-only state, not synced with URL)
-  // const [columnFilters, onColumnFiltersChange] = useState<ColumnFiltersState>([])
-  // const [pagination, onPaginationChange] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 })
 
   // Synced with URL states (keys/defaults mirror users route search schema)
   const {
@@ -61,6 +56,21 @@ export function UsersTable({ data, search, navigate }: DataTableProps) {
     ],
   })
 
+  // Calcular el número de páginas basado en el total del servidor
+  // Usar el pageSize del estado de paginación que ya tiene el valor por defecto
+  const currentPageSize = useMemo(() => {
+    const size = pagination.pageSize || pageSize || 10
+    return typeof size === 'number' && size > 0 ? size : 10
+  }, [pagination.pageSize, pageSize])
+  
+  const pageCount = useMemo(() => {
+    if (typeof total !== 'number' || total <= 0 || currentPageSize <= 0) {
+      return 1 // Mínimo 1 página para evitar NaN
+    }
+    const calculated = Math.ceil(total / currentPageSize)
+    return isNaN(calculated) || calculated <= 0 ? 1 : calculated
+  }, [total, currentPageSize])
+
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data,
@@ -78,17 +88,16 @@ export function UsersTable({ data, search, navigate }: DataTableProps) {
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
     onColumnVisibilityChange: setColumnVisibility,
-    getPaginationRowModel: getPaginationRowModel(),
+    manualPagination: true, // Paginación del lado del servidor
+    pageCount, // Número total de páginas del servidor
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getFacetedRowModel: getFacetedRowModel(),
-    getFacetedUniqueValues: getFacetedUniqueValues(),
   })
 
   useEffect(() => {
-    ensurePageInRange(table.getPageCount())
-  }, [table, ensurePageInRange])
+    ensurePageInRange(pageCount)
+  }, [pageCount, ensurePageInRange])
 
   return (
     <div

@@ -33,6 +33,7 @@ export function Users() {
   })
 
   const users = usersResponse?.data || []
+  const total = usersResponse?.total || 0
 
   const handleRefreshUsers = () => {
     queryClient.invalidateQueries({ queryKey: ['users'] })
@@ -56,7 +57,13 @@ export function Users() {
           </div>
           <UsersPrimaryButtons />
         </div>
-        <UsersTable data={users} search={search} navigate={navigate} />
+        <UsersTable 
+          data={users} 
+          search={search} 
+          navigate={navigate}
+          total={total}
+          pageSize={search.pageSize as number}
+        />
       </Main>
 
       <UsersDialogs onSuccess={handleRefreshUsers} />
