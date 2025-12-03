@@ -34,11 +34,8 @@ import {
   reclamosService,
   EstadoReclamo,
   type ChangeStateDto,
-  type UpdateAreaDto,
 } from '@/services/reclamos/reclamos.service'
-import { areasService } from '@/services/areas/areas.service'
 import { toast } from 'sonner'
-import { useQuery } from '@tanstack/react-query'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertCircle, Info } from 'lucide-react'
 import { type Reclamo } from '../data/schema'
@@ -48,7 +45,6 @@ const formSchema = z.object({
   estado: z.nativeEnum(EstadoReclamo),
   sintesis: z.string().max(1000, 'La síntesis no puede exceder 1000 caracteres.').optional(),
   nombre: z.string().max(255, 'El nombre no puede exceder 255 caracteres.').optional(),
-  fkArea: z.string().optional(),
 }).refine(
   (data) => {
     // Síntesis es obligatoria cuando se cambia a Resuelto o Rechazado
@@ -102,20 +98,12 @@ export function ReclamoChangeStateDialog({
   const isFinalState = currentRow.estado === EstadoReclamo.RESUELTO || currentRow.estado === EstadoReclamo.RECHAZADO
   const validNextStates = getValidNextStates(currentRow.estado)
 
-  // Obtener áreas para el selector
-  const { data: areasResponse } = useQuery({
-    queryKey: ['areas-list'],
-    queryFn: () => areasService.getAll({ page: 1, limit: 100 }),
-    enabled: open && isManager,
-  })
-
   const form = useForm<ReclamoForm>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       estado: currentRow.estado,
       sintesis: '',
       nombre: '',
-      fkArea: currentRow.fkArea,
     },
   })
 
@@ -128,7 +116,6 @@ export function ReclamoChangeStateDialog({
         estado: currentRow.estado,
         sintesis: '',
         nombre: '',
-        fkArea: currentRow.fkArea,
       })
     }
   }, [open, currentRow, form])
@@ -147,25 +134,14 @@ export function ReclamoChangeStateDialog({
     try {
       setIsSubmitting(true)
 
-      // Si el estado cambió, actualizar estado con síntesis
-      if (values.estado !== currentRow.estado) {
-        const changeStateData: ChangeStateDto = {
-          estado: values.estado,
-          sintesis: values.sintesis || undefined,
-          nombre: values.nombre || undefined,
-        }
-        await reclamosService.changeState(currentRow._id, changeStateData)
+      const changeStateData: ChangeStateDto = {
+        estado: values.estado,
+        sintesis: values.sintesis || undefined,
+        nombre: values.nombre || undefined,
       }
+      await reclamosService.changeState(currentRow._id, changeStateData)
 
-      // Si el área cambió, actualizar área
-      if (values.fkArea && values.fkArea !== currentRow.fkArea) {
-        const updateAreaData: UpdateAreaDto = {
-          fkArea: values.fkArea,
-        }
-        await reclamosService.updateArea(currentRow._id, updateAreaData)
-      }
-
-      toast.success('Reclamo actualizado correctamente')
+      toast.success('Estado del reclamo actualizado correctamente')
       onOpenChange(false)
       onSuccess?.()
     } catch (error: any) {
@@ -176,8 +152,6 @@ export function ReclamoChangeStateDialog({
       setIsSubmitting(false)
     }
   }
-
-  const areas = areasResponse?.data || []
 
   if (!isManager) {
     return null
@@ -264,35 +238,6 @@ export function ReclamoChangeStateDialog({
                       Estados válidos: {validNextStates.join(', ')}
                     </p>
                   )}
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name='fkArea'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Área Responsable</FormLabel>
-                  <FormControl>
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value}
-                      disabled={isFinalState}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder='Seleccione un área' />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {areas.map((area) => (
-                          <SelectItem key={area._id} value={area._id}>
-                            {area.nombre}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormMessage />
                 </FormItem>
               )}
             />

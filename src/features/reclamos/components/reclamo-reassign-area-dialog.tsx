@@ -28,8 +28,10 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { AlertCircle } from 'lucide-react'
 import { toast } from 'sonner'
-import { reclamosService } from '@/services/reclamos/reclamos.service'
+import { reclamosService, EstadoReclamo } from '@/services/reclamos/reclamos.service'
 import { areasService, type Area } from '@/services/areas/areas.service'
 import { handleServerError } from '@/lib/handle-server-error'
 import { type Reclamo } from '../data/schema'
@@ -57,6 +59,7 @@ export function ReclamoReassignAreaDialog({
   const [isLoading, setIsLoading] = useState(false)
   const [areas, setAreas] = useState<Area[]>([])
   const [isLoadingAreas, setIsLoadingAreas] = useState(false)
+  const isFinalState = currentRow.estado === EstadoReclamo.RESUELTO || currentRow.estado === EstadoReclamo.RECHAZADO
 
   const form = useForm<ReassignAreaFormValues>({
     resolver: zodResolver(reassignAreaSchema),
@@ -90,6 +93,11 @@ export function ReclamoReassignAreaDialog({
   }
 
   const onSubmit = async (values: ReassignAreaFormValues) => {
+    if (isFinalState) {
+      toast.error('No se puede reasignar el área de un reclamo en estado final (Resuelto o Rechazado)')
+      return
+    }
+
     try {
       setIsLoading(true)
       await reclamosService.reassignArea(currentRow._id, values.nuevaAreaId)
@@ -110,10 +118,23 @@ export function ReclamoReassignAreaDialog({
         <DialogHeader>
           <DialogTitle>Reasignar área del reclamo</DialogTitle>
           <DialogDescription>
-            Selecciona el área a la que deseas reasignar este reclamo. Los
-            encargados actuales serán removidos y el estado cambiará a Pendiente.
+            {isFinalState 
+              ? 'Este reclamo está en estado final y no puede ser reasignado.'
+              : 'Selecciona el área a la que deseas reasignar este reclamo. Los encargados actuales serán removidos y el estado cambiará a Pendiente.'
+            }
           </DialogDescription>
         </DialogHeader>
+
+        {isFinalState && (
+          <Alert variant='destructive'>
+            <AlertCircle className='h-4 w-4' />
+            <AlertDescription>
+              Este reclamo está en estado "{currentRow.estado}" y no puede ser reasignado.
+              Los reclamos en estado Resuelto o Rechazado no pueden ser modificados.
+            </AlertDescription>
+          </Alert>
+        )}
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
             <div className='space-y-4'>
@@ -131,7 +152,7 @@ export function ReclamoReassignAreaDialog({
                   <FormItem>
                     <FormLabel>Nueva área</FormLabel>
                     <Select
-                      disabled={isLoadingAreas || isLoading}
+                      disabled={isLoadingAreas || isLoading || isFinalState}
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                     >
@@ -184,7 +205,7 @@ export function ReclamoReassignAreaDialog({
               >
                 Cancelar
               </Button>
-              <Button type='submit' disabled={isLoading || isLoadingAreas}>
+              <Button type='submit' disabled={isLoading || isLoadingAreas || isFinalState}>
                 {isLoading && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
                 Reasignar área
               </Button>

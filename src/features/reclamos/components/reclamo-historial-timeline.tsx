@@ -238,20 +238,20 @@ export function ReclamoHistorialTimeline({ reclamoId }: ReclamoHistorialTimeline
                           Información adicional:
                         </p>
                         <div className='bg-muted/50 rounded-md p-3 space-y-1'>
-                          {evento.metadata.estadoAnterior && (
+                          {evento.metadata.estado_anterior && (
                             <div className='text-xs'>
                               <span className='font-medium'>Estado anterior:</span>{' '}
-                              <span className='text-muted-foreground'>
-                                {evento.metadata.estadoAnterior}
-                              </span>
+                              <Badge variant='outline' className='ml-1'>
+                                {evento.metadata.estado_anterior}
+                              </Badge>
                             </div>
                           )}
-                          {evento.metadata.estadoNuevo && (
+                          {evento.metadata.estado_actual && (
                             <div className='text-xs'>
-                              <span className='font-medium'>Estado nuevo:</span>{' '}
-                              <span className='text-muted-foreground'>
-                                {evento.metadata.estadoNuevo}
-                              </span>
+                              <span className='font-medium'>Estado actual:</span>{' '}
+                              <Badge variant='outline' className='ml-1'>
+                                {evento.metadata.estado_actual}
+                              </Badge>
                             </div>
                           )}
                           {evento.metadata.areaAnterior && (
