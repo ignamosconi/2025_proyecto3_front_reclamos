@@ -90,9 +90,13 @@ export function RecentSynthesis({ limit = 10 }: RecentSynthesisProps) {
 
   if (!allSynthesis || allSynthesis.length === 0) {
     return (
-      <div className='flex items-center justify-center py-8'>
-        <p className='text-muted-foreground text-sm'>
-          No hay síntesis disponibles. Los reclamos cerrados mostrarán sus síntesis aquí.
+      <div className='flex flex-col items-center justify-center py-12 px-4'>
+        <div className='rounded-full bg-muted p-4 mb-4'>
+          <FileText className='h-8 w-8 text-muted-foreground' />
+        </div>
+        <p className='text-muted-foreground text-sm text-center max-w-md'>
+          No hay síntesis disponibles en este momento. 
+          Los reclamos cerrados mostrarán sus síntesis aquí cuando estén disponibles.
         </p>
       </div>
     )
@@ -110,58 +114,67 @@ export function RecentSynthesis({ limit = 10 }: RecentSynthesisProps) {
   return (
     <div className='space-y-4'>
       {sortedSynthesis.map((sintesis) => (
-        <Card key={sintesis._id} className='hover:shadow-md transition-shadow'>
+        <Card 
+          key={sintesis._id} 
+          className='hover:shadow-lg transition-all duration-200 border-l-4 border-l-primary/50'
+        >
           <CardHeader className='pb-3'>
-            <div className='flex items-start justify-between gap-2'>
-              <div className='flex-1'>
-                <CardTitle className='text-base mb-1'>
-                  {sintesis.nombre || 'Síntesis'}
-                </CardTitle>
-                <div className='flex items-center gap-2 text-xs text-muted-foreground'>
-                  <FileText className='h-3 w-3' />
-                  <span className='font-medium'>{sintesis.claimTitle}</span>
+            <div className='flex items-start justify-between gap-4'>
+              <div className='flex-1 space-y-2'>
+                <div className='flex items-center gap-2'>
+                  <div className='rounded-md bg-primary/10 p-1.5'>
+                    <FileText className='h-4 w-4 text-primary' />
+                  </div>
+                  <CardTitle className='text-base font-semibold'>
+                    {sintesis.nombre || 'Síntesis del Reclamo'}
+                  </CardTitle>
+                </div>
+                <div className='flex items-center gap-2 flex-wrap'>
                   <Badge
                     variant={
                       sintesis.claimEstado === EstadoReclamo.RESUELTO
                         ? 'default'
                         : 'destructive'
                     }
-                    className='text-xs'
+                    className='text-xs font-medium'
                   >
                     {sintesis.claimEstado}
                   </Badge>
+                  <span className='text-sm text-muted-foreground font-medium'>
+                    {sintesis.claimTitle}
+                  </span>
                 </div>
               </div>
             </div>
           </CardHeader>
-          <CardContent className='space-y-3'>
-            <p className='text-sm text-muted-foreground line-clamp-3'>
+          <CardContent className='space-y-4'>
+            <p className='text-sm text-foreground/80 leading-relaxed line-clamp-3'>
               {sintesis.descripcion}
             </p>
-            <div className='flex items-center justify-between'>
+            <div className='flex items-center justify-between pt-2 border-t'>
               <div className='flex items-center gap-2 text-xs text-muted-foreground'>
-                <Calendar className='h-3 w-3' />
-                <span>
+                <Calendar className='h-4 w-4' />
+                <span className='font-medium'>
                   {new Date(sintesis.createdAt).toLocaleDateString('es-ES', {
                     year: 'numeric',
-                    month: 'short',
+                    month: 'long',
                     day: 'numeric',
                   })}
                 </span>
               </div>
               <Button
-                variant='ghost'
+                variant='outline'
                 size='sm'
-                className='h-7 text-xs'
+                className='h-8 text-xs font-medium'
                 asChild
               >
                 <Link
                   to='/reclamos'
                   search={{ view: sintesis.claimId }}
-                  className='flex items-center gap-1'
+                  className='flex items-center gap-1.5'
                 >
-                  Ver reclamo
-                  <ArrowRight className='h-3 w-3' />
+                  Ver detalles
+                  <ArrowRight className='h-3.5 w-3.5' />
                 </Link>
               </Button>
             </div>

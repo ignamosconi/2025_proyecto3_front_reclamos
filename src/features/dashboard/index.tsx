@@ -5,17 +5,15 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { Tabs, TabsContent } from '@/components/ui/tabs'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ThemeSwitch } from '@/components/theme-switch'
-import { Analytics } from './components/analytics'
-import { Overview } from './components/overview'
-import { RecentSales } from './components/recent-sales'
 import { RecentSynthesis } from './components/recent-synthesis'
 import { DashboardFiltersComponent, DashboardFilters } from './components/dashboard-filters'
-import { useDashboardStats, useRecentSales } from '@/hooks/use-dashboard-stats'
-import { Skeleton } from '@/components/ui/skeleton'
+import { ClaimsPerProjectChart } from './components/claims-per-project-chart'
+import { ClaimsByStatusChart } from './components/claims-by-status-chart'
+import { AverageResolutionTime } from './components/average-resolution-time'
+import { useClientDashboardMetrics } from '@/hooks/use-dashboard-stats'
 import { useState, useMemo } from 'react'
 import { useAuthStore } from '@/stores/auth-store'
 
@@ -28,12 +26,11 @@ export function Dashboard() {
   const stableFilters = useMemo(() => filters, [
     filters.dateFrom,
     filters.dateTo,
+    filters.specificDay,
+    filters.proyectoId,
   ])
   
-  const { data: stats, isLoading: statsLoading } = useDashboardStats(stableFilters)
-  const { data: recentSales } = useRecentSales(5, stableFilters)
-
-  const recentSalesCount = recentSales?.length || 0
+  const { data: clientMetrics } = useClientDashboardMetrics(isClient ? stableFilters : undefined)
 
   return (
     <>
@@ -46,199 +43,176 @@ export function Dashboard() {
 
       {/* ===== Main ===== */}
       <Main>
-        <div className='mb-2 flex items-center justify-between space-y-2'>
-          <h1 className='text-2xl font-bold tracking-tight'>Dashboard</h1>
+        <div className='mb-6 flex flex-col gap-2'>
+          <h1 className='text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent'>
+            {isClient ? 'Dashboard de Reclamos' : 'Dashboard'}
+          </h1>
+          <p className='text-muted-foreground text-sm'>
+            {isClient 
+              ? 'Visualiza y analiza el estado de tus reclamos y proyectos'
+              : 'Panel de control general del sistema'}
+          </p>
         </div>
-        <Tabs
-          orientation='vertical'
-          defaultValue='overview'
-          className='space-y-4'
-        >
-          <div className='w-full overflow-x-auto pb-2'>
-          </div>
-          <TabsContent value='overview' className='space-y-4'>
+        
+        {isClient ? (
+          <div className='space-y-6'>
             {/* Filtros */}
             <DashboardFiltersComponent 
               filters={filters} 
-              onFiltersChange={setFilters} 
+              onFiltersChange={setFilters}
+              showClientFilters={isClient}
             />
             
+            {/* Client Dashboard Metrics - Improved Layout */}
             <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-4'>
-              <Card>
+              <Card className='border-primary/20 shadow-sm hover:shadow-md transition-shadow duration-200'>
                 <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
                   <CardTitle className='text-sm font-medium'>
-                    Ingresos totales
+                    Total de Reclamos
                   </CardTitle>
-                  <svg
-                    xmlns='http://www.w3.org/2000/svg'
-                    viewBox='0 0 24 24'
-                    fill='none'
-                    stroke='currentColor'
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    strokeWidth='2'
-                    className='text-muted-foreground h-4 w-4'
-                  >
-                    <path d='M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6' />
-                  </svg>
+                  <div className='rounded-full bg-primary/10 p-2'>
+                    <svg
+                      xmlns='http://www.w3.org/2000/svg'
+                      viewBox='0 0 24 24'
+                      fill='none'
+                      stroke='currentColor'
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth='2'
+                      className='text-primary h-5 w-5'
+                    >
+                      <path d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2' />
+                      <circle cx='9' cy='7' r='4' />
+                      <path d='M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75' />
+                    </svg>
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  {statsLoading ? (
-                    <Skeleton className='h-8 w-32' />
-                  ) : (
-                    <>
-                      <div className='text-2xl font-bold'>
-                        ${stats?.totalRevenue.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0,00'}
-                      </div>
-                      <p className='text-muted-foreground text-xs'>
-                        {stats?.revenueGrowth && stats.revenueGrowth > 0 ? '+' : ''}
-                        {stats?.revenueGrowth.toFixed(1).replace('.', ',') || '0'}% desde el mes pasado
-                      </p>
-                    </>
-                  )}
+                  <div className='text-3xl font-bold text-foreground'>
+                    {clientMetrics?.totalClaims || 0}
+                  </div>
+                  <p className='text-muted-foreground text-xs mt-1'>
+                    En el período seleccionado
+                  </p>
                 </CardContent>
               </Card>
-              <Card>
+              
+              <AverageResolutionTime filters={stableFilters} />
+              
+              <Card className='border-blue-500/20 shadow-sm hover:shadow-md transition-shadow duration-200'>
                 <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
                   <CardTitle className='text-sm font-medium'>
-                    Ventas mes actual
+                    Reclamos Pendientes
                   </CardTitle>
-                  <svg
-                    xmlns='http://www.w3.org/2000/svg'
-                    viewBox='0 0 24 24'
-                    fill='none'
-                    stroke='currentColor'
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    strokeWidth='2'
-                    className='text-muted-foreground h-4 w-4'
-                  >
-                    <path d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2' />
-                    <circle cx='9' cy='7' r='4' />
-                    <path d='M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75' />
-                  </svg>
+                  <div className='rounded-full bg-blue-500/10 p-2'>
+                    <svg
+                      xmlns='http://www.w3.org/2000/svg'
+                      viewBox='0 0 24 24'
+                      fill='none'
+                      stroke='currentColor'
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth='2'
+                      className='text-blue-500 h-5 w-5'
+                    >
+                      <circle cx='12' cy='12' r='10' />
+                      <path d='M12 6v6l4 2' />
+                    </svg>
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  {statsLoading ? (
-                    <Skeleton className='h-8 w-32' />
-                  ) : (
-                    <>
-                      <div className='text-2xl font-bold'>+{recentSalesCount}</div>
-                      <p className='text-muted-foreground text-xs'>
-                        Ventas recientes mostradas
-                      </p>
-                    </>
-                  )}
+                  <div className='text-3xl font-bold text-foreground'>
+                    {clientMetrics?.claimsByStatus?.find((s: any) => s.estado === 'Pendiente')?.cantidad || 0}
+                  </div>
+                  <p className='text-muted-foreground text-xs mt-1'>
+                    Esperando atención
+                  </p>
                 </CardContent>
               </Card>
-              <Card>
-                <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-                  <CardTitle className='text-sm font-medium'>Total de ventas</CardTitle>
-                  <svg
-                    xmlns='http://www.w3.org/2000/svg'
-                    viewBox='0 0 24 24'
-                    fill='none'
-                    stroke='currentColor'
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    strokeWidth='2'
-                    className='text-muted-foreground h-4 w-4'
-                  >
-                    <rect width='20' height='14' x='2' y='5' rx='2' />
-                    <path d='M2 10h20' />
-                  </svg>
-                </CardHeader>
-                <CardContent>
-                  {statsLoading ? (
-                    <Skeleton className='h-8 w-32' />
-                  ) : (
-                    <>
-                      <div className='text-2xl font-bold'>+{stats?.totalSales || 0}</div>
-                      <p className='text-muted-foreground text-xs'>
-                        {stats?.salesGrowth && stats.salesGrowth > 0 ? '+' : ''}
-                        {stats?.salesGrowth.toFixed(1) || '0'}% desde el mes pasado
-                      </p>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
-              <Card>
+              
+              <Card className='border-green-500/20 shadow-sm hover:shadow-md transition-shadow duration-200'>
                 <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
                   <CardTitle className='text-sm font-medium'>
-                    Crecimiento
+                    Reclamos Resueltos
                   </CardTitle>
-                  <svg
-                    xmlns='http://www.w3.org/2000/svg'
-                    viewBox='0 0 24 24'
-                    fill='none'
-                    stroke='currentColor'
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    strokeWidth='2'
-                    className='text-muted-foreground h-4 w-4'
-                  >
-                    <path d='M22 12h-4l-3 9L9 3l-3 9H2' />
-                  </svg>
+                  <div className='rounded-full bg-green-500/10 p-2'>
+                    <svg
+                      xmlns='http://www.w3.org/2000/svg'
+                      viewBox='0 0 24 24'
+                      fill='none'
+                      stroke='currentColor'
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth='2'
+                      className='text-green-500 h-5 w-5'
+                    >
+                      <path d='M22 11.08V12a10 10 0 1 1-5.93-9.14' />
+                      <polyline points='22 4 12 14.01 9 11.01' />
+                    </svg>
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  {statsLoading ? (
-                    <Skeleton className='h-8 w-32' />
-                  ) : (
-                    <>
-                      <div className='text-2xl font-bold'>
-                        {stats?.revenueGrowth && stats.revenueGrowth > 0 ? '+' : ''}
-                        {stats?.revenueGrowth.toFixed(1) || '0'}%
-                      </div>
-                      <p className='text-muted-foreground text-xs'>
-                        Comparado con el mes anterior
-                      </p>
-                    </>
-                  )}
+                  <div className='text-3xl font-bold text-foreground'>
+                    {clientMetrics?.claimsByStatus?.find((s: any) => s.estado === 'Resuelto')?.cantidad || 0}
+                  </div>
+                  <p className='text-muted-foreground text-xs mt-1'>
+                    Completados exitosamente
+                  </p>
                 </CardContent>
               </Card>
             </div>
-            <div className='grid grid-cols-1 gap-4 lg:grid-cols-7'>
-              <Card className='col-span-1 lg:col-span-4'>
-                <CardHeader>
-                  <CardTitle>Ventas mensuales</CardTitle>
-                </CardHeader>
-                <CardContent className='ps-2'>
-                  <Overview filters={stableFilters} />
-                </CardContent>
-              </Card>
-              <Card className='col-span-1 lg:col-span-3'>
-                <CardHeader>
-                  <CardTitle>Ventas recientes</CardTitle>
-                  <CardDescription>
-                    {recentSalesCount > 0 
-                      ? `Mostrando ${recentSalesCount} ventas recientes.`
-                      : 'No hay ventas recientes.'
-                    }
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <RecentSales filters={stableFilters} />
-                </CardContent>
-              </Card>
+            
+            {/* Charts Section */}
+            <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
+              <ClaimsPerProjectChart filters={stableFilters} />
+              <ClaimsByStatusChart filters={stableFilters} />
             </div>
-            {isClient && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Síntesis de reclamos cerrados</CardTitle>
-                  <CardDescription>
-                    Resoluciones y cierres de tus reclamos
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <RecentSynthesis limit={5} />
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
-          <TabsContent value='analytics' className='space-y-4'>
-            <Analytics />
-          </TabsContent>
-        </Tabs>
+            
+            {/* Recent Synthesis Section */}
+            <Card className='shadow-sm'>
+              <CardHeader className='border-b'>
+                <div className='flex items-center gap-2'>
+                  <div className='rounded-lg bg-primary/10 p-2'>
+                    <svg
+                      xmlns='http://www.w3.org/2000/svg'
+                      viewBox='0 0 24 24'
+                      fill='none'
+                      stroke='currentColor'
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth='2'
+                      className='text-primary h-5 w-5'
+                    >
+                      <path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z' />
+                      <polyline points='14 2 14 8 20 8' />
+                      <line x1='16' y1='13' x2='8' y2='13' />
+                      <line x1='16' y1='17' x2='8' y2='17' />
+                      <polyline points='10 9 9 9 8 9' />
+                    </svg>
+                  </div>
+                  <div>
+                    <CardTitle className='text-lg'>Síntesis de Reclamos Cerrados</CardTitle>
+                    <CardDescription>
+                      Resoluciones y cierres de tus reclamos más recientes
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className='pt-6'>
+                <RecentSynthesis limit={5} />
+              </CardContent>
+            </Card>
+          </div>
+        ) : (
+          <Card className='border-dashed'>
+            <CardHeader>
+              <CardTitle>Bienvenido</CardTitle>
+              <CardDescription>
+                No tienes acceso al dashboard. Por favor, contacta al administrador.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        )}
       </Main>
     </>
   )

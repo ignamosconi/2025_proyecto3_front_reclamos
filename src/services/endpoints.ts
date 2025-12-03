@@ -87,6 +87,11 @@ export const ENCUESTA_ENDPOINTS = {
   GET_BY_RECLAMO: (reclamoId: string) => `${API_BASE_URL}/reclamos/${reclamoId}/encuesta`,
 }
 
+// Endpoints de dashboard
+export const DASHBOARD_ENDPOINTS = {
+  CLIENT_METRICS: `${API_BASE_URL}/dashboard/cliente`,
+}
+
 // Función auxiliar para crear URLs con parámetros de consulta
 export const buildQueryParams = (
   baseUrl: string,
