@@ -48,7 +48,7 @@ export function ReclamosTable({ data, search, navigate, total, pageSize }: DataT
     search,
     navigate,
     pagination: { defaultPage: 1, defaultPageSize: 10 },
-    globalFilter: { enabled: true, searchKey: 'search' },
+    globalFilter: { enabled: true, key: 'search' },
     columnFilters: [],
   })
 

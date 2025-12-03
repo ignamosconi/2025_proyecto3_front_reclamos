@@ -8,6 +8,7 @@ import { TipoReclamoProvider } from './components/tipo-reclamo-provider'
 import { TipoReclamoTable } from './components/tipo-reclamo-table'
 import { tipoReclamoService } from '@/services/tipo-reclamo/tipo-reclamo.service'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { tipoReclamoListSchema } from './data/schema'
 
 const route = getRouteApi('/_authenticated/tipo-reclamo')
 
@@ -18,12 +19,16 @@ export function TipoReclamo() {
 
   const { data: tipoReclamoResponse } = useQuery({
     queryKey: ['tipo-reclamo', search],
-    queryFn: () => tipoReclamoService.getAll({
-      page: search.page as number,
-      limit: search.pageSize as number,
-      sort: search.sort as 'asc' | 'desc',
-      search: search.search as string,
-    })
+    queryFn: async () => {
+      const response = await tipoReclamoService.getAll({
+        page: search.page as number,
+        limit: search.pageSize as number,
+        sort: search.sort as 'asc' | 'desc',
+        search: search.search as string,
+      })
+      const parsed = tipoReclamoListSchema.parse(response.data)
+      return { ...response, data: parsed }
+    }
   })
 
   const tiposReclamo = tipoReclamoResponse?.data || []

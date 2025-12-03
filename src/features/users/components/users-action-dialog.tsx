@@ -281,13 +281,14 @@ export function UsersActionDialog({
                   <FormItem>
                     <FormLabel>Rol</FormLabel>
                     <SelectDropdown
-                      value={field.value}
+                      defaultValue={field.value}
                       onValueChange={field.onChange}
                       placeholder='Selecciona un rol'
                       items={[
                         { label: 'Encargado', value: 'Encargado' },
                         { label: 'Gerente', value: 'Gerente' },
                       ]}
+                      isControlled={true}
                     />
                     <FormMessage />
                   </FormItem>
@@ -428,13 +429,14 @@ export function UsersActionDialog({
                 <FormItem>
                   <FormLabel>Rol</FormLabel>
                   <SelectDropdown
-                    value={field.value}
+                    defaultValue={field.value}
                     onValueChange={field.onChange}
                     placeholder='Selecciona un rol'
                     items={staffRoles.map(({ label, value }) => ({
                       label,
                       value,
                     }))}
+                    isControlled={true}
                   />
                   <FormMessage />
                 </FormItem>

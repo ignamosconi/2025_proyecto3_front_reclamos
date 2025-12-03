@@ -73,7 +73,7 @@ export function ReclamoCreateDialog({
   // Obtener proyectos activos del cliente
   const { data: proyectosResponse } = useQuery({
     queryKey: ['proyectos-activos'],
-    queryFn: () => proyectosService.getAll({ page: 1, limit: 100, activo: true }),
+    queryFn: () => proyectosService.getAll({ page: 1, limit: 100, estado: 'activo' }),
     enabled: open,
   })
 

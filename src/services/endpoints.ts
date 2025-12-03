@@ -90,6 +90,15 @@ export const ENCUESTA_ENDPOINTS = {
   GET_BY_RECLAMO: (reclamoId: string) => `${API_BASE_URL}/reclamos/${reclamoId}/encuesta`,
 }
 
+// Endpoints de productos
+export const PRODUCT_ENDPOINTS = {
+  GET_ALL: `${API_BASE_URL}/products`,
+  GET_BY_ID: (id: string) => `${API_BASE_URL}/products/${id}`,
+  CREATE: `${API_BASE_URL}/products`,
+  UPDATE: (id: string) => `${API_BASE_URL}/products/${id}`,
+  DELETE: (id: string) => `${API_BASE_URL}/products/${id}`,
+}
+
 // Endpoints de dashboard
 export const DASHBOARD_ENDPOINTS = {
   CLIENT_METRICS: `${API_BASE_URL}/dashboard/cliente`,

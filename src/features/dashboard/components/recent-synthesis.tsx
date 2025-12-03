@@ -170,7 +170,7 @@ export function RecentSynthesis({ limit = 10 }: RecentSynthesisProps) {
               >
                 <Link
                   to='/reclamos'
-                  search={{ view: sintesis.claimId }}
+                  search={{ page: 1, pageSize: 10 }}
                   className='flex items-center gap-1.5'
                 >
                   Ver detalles

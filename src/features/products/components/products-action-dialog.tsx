@@ -40,7 +40,7 @@ import { toast } from 'sonner'
 import { type Product } from '../data/schema'
 import { CreateProductDto, productsService, UpdateProductDto } from '@/services/products/products.service'
 import { Textarea } from '@/components/ui/textarea'
-import { brandsService } from '@/services/brands/brands.service'
+// import { brandsService } from '@/services/brands/brands.service' // TODO: Implementar servicio de marcas
 
 const formSchema = z
   .object({
@@ -84,6 +84,7 @@ export function ProductsActionDialog({
   const [openMarcaCombobox, setOpenMarcaCombobox] = useState(false)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [hasNewImage, setHasNewImage] = useState(false)
+  const [_selectedMarcaId, setSelectedMarcaId] = useState<number | undefined>(undefined)
 
   const form = useForm<ProductForm>({
     resolver: zodResolver(formSchema),
@@ -138,8 +139,10 @@ export function ProductsActionDialog({
   const loadMarcas = async () => {
     try {
       setIsLoadingMarcas(true)
-      const marcasData = await brandsService.getAll()
-      setMarcas(marcasData)
+      // TODO: Implementar servicio de marcas
+      // const marcasData = await brandsService.getAll()
+      // setMarcas(marcasData)
+      setMarcas([])
     } catch (error) {
       console.error('Error al cargar marcas:', error)
       toast.error('Error al cargar las marcas')

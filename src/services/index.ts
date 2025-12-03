@@ -1,6 +1,6 @@
 export { authService } from './auth/auth.service'
 export { usersService } from './users/users.service'
-export { dashboardService } from './dashboard/dashboard.service'
+export { clientDashboardService, encargadoDashboardService, gerenteDashboardService } from './dashboard/dashboard.service'
 export { tipoReclamoService } from './tipo-reclamo/tipo-reclamo.service'
 export { areasService } from './areas/areas.service'
 export { reclamosService } from './reclamos/reclamos.service'

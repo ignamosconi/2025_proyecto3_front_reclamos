@@ -24,8 +24,8 @@ export function ProyectoViewDialog({
 }: ProyectoViewDialogProps) {
   const clienteNombre = typeof currentRow.cliente === 'string'
     ? '-'
-    : currentRow.cliente.firstName && currentRow.cliente.lastName
-    ? `${currentRow.cliente.firstName} ${currentRow.cliente.lastName}`
+    : currentRow.cliente.nombre && currentRow.cliente.apellido
+    ? `${currentRow.cliente.nombre} ${currentRow.cliente.apellido}`
     : currentRow.cliente.email
 
   const clienteEmail = typeof currentRow.cliente === 'string'

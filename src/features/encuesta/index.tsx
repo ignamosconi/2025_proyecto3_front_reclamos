@@ -38,7 +38,6 @@ export function Encuesta() {
   const {
     data: encuesta,
     isLoading: isLoadingEncuesta,
-    error: errorEncuesta,
   } = useQuery({
     queryKey: ['encuesta', reclamoId],
     queryFn: () => encuestaService.getByReclamoId(reclamoId),

@@ -9,6 +9,7 @@ import { ProyectosTable } from './components/proyectos-table'
 import { ProyectosFilters } from './components/proyectos-filters'
 import { proyectosService } from '@/services/proyectos/proyectos.service'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { proyectoListSchema } from './data/schema'
 
 const route = getRouteApi('/_authenticated/proyectos')
 
@@ -19,15 +20,19 @@ export function Proyectos() {
 
   const { data: proyectosResponse, error } = useQuery({
     queryKey: ['proyectos', search],
-    queryFn: () => proyectosService.getAll({
-      page: search.page as number,
-      limit: search.pageSize as number,
-      sort: search.sort as string,
-      search: search.search as string,
-      cliente: search.cliente && search.cliente !== 'all' ? (search.cliente as string) : undefined,
-      areaResponsable: search.areaResponsable && search.areaResponsable !== 'all' ? (search.areaResponsable as string) : undefined,
-      estado: search.estado && search.estado !== 'all' ? (search.estado as 'activo' | 'inactivo') : undefined,
-    }),
+    queryFn: async () => {
+      const response = await proyectosService.getAll({
+        page: search.page as number,
+        limit: search.pageSize as number,
+        sort: search.sort as string,
+        search: search.search as string,
+        cliente: search.cliente && search.cliente !== 'all' ? (search.cliente as string) : undefined,
+        areaResponsable: search.areaResponsable && search.areaResponsable !== 'all' ? (search.areaResponsable as string) : undefined,
+        estado: (search.estado && typeof search.estado === 'string' && (search.estado === 'activo' || search.estado === 'inactivo')) ? (search.estado as 'activo' | 'inactivo') : undefined,
+      })
+      const parsed = proyectoListSchema.parse(response.data)
+      return { ...response, data: parsed }
+    },
     retry: 1,
   })
 

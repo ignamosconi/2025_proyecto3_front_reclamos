@@ -1,6 +1,5 @@
 import api from '@/lib/axios';
 import { AREAS_ENDPOINTS } from '../endpoints';
-import { buildQueryParams } from '../endpoints';
 
 export interface Area {
   _id: string;

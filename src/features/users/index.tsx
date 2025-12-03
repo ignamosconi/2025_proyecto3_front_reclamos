@@ -8,6 +8,7 @@ import { UsersProvider } from './components/users-provider'
 import { UsersTable } from './components/users-table'
 import { usersService } from '@/services/users/users.service'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { userListSchema } from './data/schema'
 
 const route = getRouteApi('/_authenticated/users/')
 
@@ -18,13 +19,17 @@ export function Users() {
 
   const { data: usersResponse } = useQuery({
     queryKey: ['users', search],
-    queryFn: () => usersService.getAll({
-      page: search.page as number,
-      limit: search.limit as number,
-      sort: search.sort as 'asc' | 'desc',
-      role: search.role as string,
-      search: search.search as string,
-    })
+    queryFn: async () => {
+      const response = await usersService.getAll({
+        page: search.page as number,
+        limit: search.pageSize as number,
+        sort: undefined,
+        role: Array.isArray(search.role) ? search.role[0] : (search.role as string | undefined),
+        search: search.username as string | undefined,
+      })
+      const parsed = userListSchema.parse(response.data)
+      return { ...response, data: parsed }
+    }
   })
 
   const users = usersResponse?.data || []

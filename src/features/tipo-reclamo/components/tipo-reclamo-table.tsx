@@ -47,7 +47,7 @@ export function TipoReclamoTable({ data, search, navigate, total, pageSize }: Da
     search,
     navigate,
     pagination: { defaultPage: 1, defaultPageSize: 10 },
-    globalFilter: { enabled: true, searchKey: 'search' },
+    globalFilter: { enabled: true, key: 'search' },
     columnFilters: [],
   })
 

@@ -10,6 +10,7 @@ import { reclamosService } from '@/services/reclamos/reclamos.service'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { EstadoReclamo } from '@/services/reclamos/reclamos.service'
 import { useAuthStore } from '@/stores/auth-store'
+import { reclamoListSchema } from './data/schema'
 
 const route = getRouteApi('/_authenticated/reclamos')
 
@@ -19,25 +20,26 @@ export function Reclamos() {
   const queryClient = useQueryClient()
   const { auth } = useAuthStore()
   const isClient = auth.hasRole('Cliente')
-  const isManager = auth.hasRole(['Encargado', 'Gerente'])
   const location = useLocation()
   
   // Check if we're on a child route (like encuesta)
   const hasChildRoute = location.pathname.includes('/encuesta')
 
-  const { data: reclamosResponse, error, isLoading } = useQuery({
+  const { data: reclamosResponse, error } = useQuery({
     queryKey: ['reclamos', search],
     queryFn: async () => {
       try {
-        return await reclamosService.getAll({
+        const response = await reclamosService.getAll({
           page: search.page as number,
           limit: search.pageSize as number,
-          estado: search.estado && search.estado !== 'all' ? (search.estado as EstadoReclamo) : undefined,
+          estado: (search.estado && typeof search.estado === 'string' && Object.values(EstadoReclamo).includes(search.estado as EstadoReclamo)) ? (search.estado as EstadoReclamo) : undefined,
           fkTipoReclamo: search.fkTipoReclamo && search.fkTipoReclamo !== 'all' ? (search.fkTipoReclamo as string) : undefined,
           fechaInicio: search.fechaInicio as string | undefined,
           fechaFin: search.fechaFin as string | undefined,
           // El backend maneja el filtrado por área para managers automáticamente
         })
+        const parsed = reclamoListSchema.parse(response.data)
+        return { ...response, data: parsed }
       } catch (err: any) {
         console.error('Error al cargar reclamos:', err)
         throw err

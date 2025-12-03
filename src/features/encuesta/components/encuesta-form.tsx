@@ -55,7 +55,6 @@ export function EncuestaForm({ reclamoId, onSuccess, onCancel }: EncuestaFormPro
     },
   })
 
-  const selectedRating = form.watch('calificacion')
 
   const onSubmit = async (values: EncuestaFormType) => {
     try {

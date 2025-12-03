@@ -1,7 +1,7 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { reclamosService, type Sintesis } from '@/services/reclamos/reclamos.service'
+import { reclamosService } from '@/services/reclamos/reclamos.service'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'

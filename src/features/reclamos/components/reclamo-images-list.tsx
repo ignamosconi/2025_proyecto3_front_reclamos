@@ -4,7 +4,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { ImageIcon } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { reclamosService } from '@/services/reclamos/reclamos.service'
-import { type Reclamo } from '../data/schema'
+import { reclamoSchema } from '../data/schema'
 
 type ReclamoImagesListProps = {
   reclamoId: string
@@ -14,12 +14,15 @@ export function ReclamoImagesList({ reclamoId }: ReclamoImagesListProps) {
   // Get the claim - images should be included in the response
   const { data: claim, isLoading } = useQuery({
     queryKey: ['reclamo', reclamoId],
-    queryFn: () => reclamosService.getById(reclamoId),
+    queryFn: async () => {
+      const response = await reclamosService.getById(reclamoId)
+      return reclamoSchema.parse(response)
+    },
     enabled: !!reclamoId,
   })
 
   // Images are now included in the claim response from the backend
-  const images = (claim as Reclamo)?.imagenes
+  const images = claim?.imagenes
 
   if (isLoading) {
     return (
@@ -43,7 +46,7 @@ export function ReclamoImagesList({ reclamoId }: ReclamoImagesListProps) {
 
   return (
     <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-      {images?.map((imagen) => {
+      {images?.map((imagen: { _id: string; nombre: string; tipo: string; url: string; fkReclamo: string; createdAt?: Date; updatedAt?: Date }) => {
         // Debug: verificar que la imagen tenga URL
         if (!imagen.url) {
           console.warn('Imagen sin URL:', imagen)

@@ -69,12 +69,6 @@ export function TopEmployeesByResolvedChart({ filters }: TopEmployeesByResolvedC
     )
   }
 
-  const getMedalColor = (index: number) => {
-    if (index === 0) return 'text-yellow-500'
-    if (index === 1) return 'text-gray-400'
-    if (index === 2) return 'text-orange-600'
-    return 'text-muted-foreground'
-  }
 
   const formattedData = chartData.map((item, index) => ({
     nombre: item.empleadoNombre.split(' ').slice(0, 2).join(' '),
@@ -149,7 +143,7 @@ export function TopEmployeesByResolvedChart({ filters }: TopEmployeesByResolvedC
               radius={[0, 8, 8, 0]}
               maxBarSize={100}
             >
-              {formattedData.map((entry, index) => (
+              {formattedData.map((_, index) => (
                 <Cell key={`cell-${index}`} fill={getBarColor(index)} />
               ))}
             </Bar>

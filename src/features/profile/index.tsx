@@ -1,4 +1,3 @@
-import { getRouteApi } from '@tanstack/react-router'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ThemeSwitch } from '@/components/theme-switch'
@@ -6,7 +5,6 @@ import { ProfileForm } from './components/profile-form'
 import { useQuery } from '@tanstack/react-query'
 import { authService } from '@/services/auth/auth.service'
 
-const route = getRouteApi('/_authenticated/profile/')
 
 export function Profile() {
   const { data: currentUser, isLoading } = useQuery({

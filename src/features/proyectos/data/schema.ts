@@ -21,8 +21,8 @@ const proyectoSchema = z.object({
     }),
   ]),
   deletedAt: z.string().nullable().optional(),
-  createdAt: z.coerce.date().optional(),
-  updatedAt: z.coerce.date().optional(),
+  createdAt: z.union([z.string(), z.date()]).optional().transform((val) => val ? (typeof val === 'string' ? new Date(val) : val) : undefined),
+  updatedAt: z.union([z.string(), z.date()]).optional().transform((val) => val ? (typeof val === 'string' ? new Date(val) : val) : undefined),
 })
 
 export type Proyecto = z.infer<typeof proyectoSchema>

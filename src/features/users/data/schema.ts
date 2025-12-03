@@ -19,8 +19,8 @@ const userSchema = z.object({
   email: z.string(),
   role: userRoleSchema,
   areas: z.array(areaSchema).optional(),
-  createdAt: z.coerce.date().optional(),
-  updatedAt: z.coerce.date().optional(),
+  createdAt: z.union([z.string(), z.date()]).optional().transform((val) => val ? (typeof val === 'string' ? new Date(val) : val) : undefined),
+  updatedAt: z.union([z.string(), z.date()]).optional().transform((val) => val ? (typeof val === 'string' ? new Date(val) : val) : undefined),
 })
 
 export type User = z.infer<typeof userSchema>

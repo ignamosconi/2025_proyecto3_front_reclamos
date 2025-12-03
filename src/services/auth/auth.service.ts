@@ -97,7 +97,7 @@ export const authService = {
   },
 
   async register(userData: { firstName: string; lastName: string; email: string; password: string; address?: string; phone?: string; role?: string; }): Promise<any> {
-    const response = await api.post<TokenPair>(USERS_ENDPOINTS.REGISTER_EMPLOYEE, userData);
+    const response = await api.post<TokenPair>(USERS_ENDPOINTS.REGISTER_STAFF, userData);
     let flag = false;
 
     if (response.data) {

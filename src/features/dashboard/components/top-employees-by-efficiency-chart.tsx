@@ -154,7 +154,7 @@ export function TopEmployeesByEfficiencyChart({ filters }: TopEmployeesByEfficie
               radius={[0, 8, 8, 0]}
               maxBarSize={100}
             >
-              {formattedData.map((entry, index) => (
+              {formattedData.map((_, index) => (
                 <Cell key={`cell-${index}`} fill={getBarColor(index)} />
               ))}
             </Bar>

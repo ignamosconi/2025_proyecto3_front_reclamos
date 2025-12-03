@@ -199,9 +199,9 @@ export function DistributionByTypeChart({ filters }: DistributionByTypeChartProp
               outerRadius={100}
               fill="#8884d8"
               dataKey="value"
-              label={({ porcentaje }) => `${porcentaje.toFixed(1)}%`}
+              label={(props: any) => `${props.porcentaje?.toFixed(1) || '0'}%`}
             >
-              {formattedData.map((entry, index) => (
+              {formattedData.map((_, index) => (
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
