@@ -16,10 +16,15 @@ export function AppTitle() {
       <SidebarMenuItem>
         <SidebarMenuButton
           size='lg'
-          className='gap-0 py-0 hover:bg-transparent active:bg-transparent'
+          className='gap-2 py-0 hover:bg-transparent active:bg-transparent'
           asChild
         >
           <div>
+            <img 
+              src='/images/reclamos-logo.png' 
+              alt='Reclamos Logo' 
+              className='size-10 object-contain'
+            />
             <Link
               to='/'
               onClick={() => setOpenMobile(false)}
