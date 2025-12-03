@@ -10,8 +10,10 @@ import { ClaimsByTypeChart } from './components/claims-by-type-chart'
 import { AverageResolutionTimeByTypeChart } from './components/average-resolution-time-by-type-chart'
 import { ResolvedClaimsByPeriodChart } from './components/resolved-claims-by-period-chart'
 import { AverageResolvedMetricCard } from './components/average-resolved-metric-card'
+import { ExportButtons } from './components/export-buttons'
 import { useEncargadoDashboardMetrics } from '@/hooks/use-dashboard-stats'
-import { useState, useMemo } from 'react'
+import { encargadoDashboardService, type ExportFormat, type DashboardEncargadoQueryDto } from '@/services/dashboard/dashboard.service'
+import { useState, useMemo, useCallback } from 'react'
 
 export function EncargadoDashboard() {
   const [filters, setFilters] = useState<DashboardFilters>({})
@@ -30,8 +32,47 @@ export function EncargadoDashboard() {
   
   const { data: encargadoMetrics } = useEncargadoDashboardMetrics(stableFilters, true)
 
+  const handleExport = useCallback(async (format: ExportFormat) => {
+    const query: DashboardEncargadoQueryDto = {}
+    
+    // Convert filters to query format
+    if (stableFilters.specificDay) {
+      query.specificDay = stableFilters.specificDay.toISOString().split('T')[0]
+    } else {
+      if (stableFilters.dateFrom) {
+        query.startDate = stableFilters.dateFrom.toISOString().split('T')[0]
+      }
+      if (stableFilters.dateTo) {
+        query.endDate = stableFilters.dateTo.toISOString().split('T')[0]
+      }
+    }
+    
+    if (stableFilters.clienteId) {
+      query.clienteId = stableFilters.clienteId
+    }
+    if (stableFilters.proyectoId) {
+      query.proyectoId = stableFilters.proyectoId
+    }
+    if (stableFilters.tipoReclamoId) {
+      query.tipoReclamoId = stableFilters.tipoReclamoId
+    }
+    if (stableFilters.estado) {
+      query.estado = stableFilters.estado
+    }
+    if (stableFilters.areaId) {
+      query.areaId = stableFilters.areaId
+    }
+    
+    await encargadoDashboardService.exportDashboard(query, format)
+  }, [stableFilters])
+
   return (
     <div className='space-y-6'>
+      {/* Export Buttons */}
+      <div className="flex justify-end">
+        <ExportButtons onExport={handleExport} />
+      </div>
+      
       {/* Filtros */}
       <DashboardFiltersComponent 
         filters={filters} 

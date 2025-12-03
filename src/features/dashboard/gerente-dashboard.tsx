@@ -11,8 +11,10 @@ import { TopEmployeesByEfficiencyChart } from './components/top-employees-by-eff
 import { StateChangesMetricCard } from './components/state-changes-metric-card'
 import { DistributionByTypeChart } from './components/distribution-by-type-chart'
 import { CriticalClaimsPercentageCard } from './components/critical-claims-percentage-card'
+import { ExportButtons } from './components/export-buttons'
 import { useGerenteDashboardMetrics } from '@/hooks/use-dashboard-stats'
-import { useState, useMemo } from 'react'
+import { gerenteDashboardService, type ExportFormat, type DashboardGerenteQueryDto } from '@/services/dashboard/dashboard.service'
+import { useState, useMemo, useCallback } from 'react'
 
 export function GerenteDashboard() {
   const [filters, setFilters] = useState<DashboardFilters>({
@@ -32,8 +34,43 @@ export function GerenteDashboard() {
   
   const { data: gerenteMetrics } = useGerenteDashboardMetrics(stableFilters, true)
 
+  const handleExport = useCallback(async (format: ExportFormat) => {
+    const query: DashboardGerenteQueryDto = {}
+    
+    // Convert filters to query format (Gerente only uses date range, not specific day)
+    if (stableFilters.dateFrom) {
+      query.startDate = stableFilters.dateFrom.toISOString().split('T')[0]
+    }
+    if (stableFilters.dateTo) {
+      query.endDate = stableFilters.dateTo.toISOString().split('T')[0]
+    }
+    
+    if (stableFilters.estado) {
+      query.estado = stableFilters.estado
+    }
+    if (stableFilters.proyectoId) {
+      query.proyectoId = stableFilters.proyectoId
+    }
+    if (stableFilters.tipoReclamoId) {
+      query.tipoReclamoId = stableFilters.tipoReclamoId
+    }
+    if (stableFilters.criticidad) {
+      query.criticidad = stableFilters.criticidad
+    }
+    if (stableFilters.topLimit !== undefined) {
+      query.topLimit = stableFilters.topLimit
+    }
+    
+    await gerenteDashboardService.exportDashboard(query, format)
+  }, [stableFilters])
+
   return (
     <div className='space-y-6'>
+      {/* Export Buttons */}
+      <div className="flex justify-end">
+        <ExportButtons onExport={handleExport} />
+      </div>
+      
       {/* Filtros */}
       <DashboardFiltersComponent 
         filters={filters} 

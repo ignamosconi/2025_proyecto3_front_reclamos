@@ -2,6 +2,20 @@ import api from '@/lib/axios'
 import { DASHBOARD_ENDPOINTS } from '../endpoints'
 import { EstadoReclamo } from '../reclamos/reclamos.service'
 
+export type ExportFormat = 'xlsx' | 'csv'
+
+// Helper function to download file from blob
+const downloadFile = (blob: Blob, filename: string): void => {
+  const url = window.URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  window.URL.revokeObjectURL(url)
+}
+
 // Client Dashboard Interfaces
 export interface ClaimsPerProjectDto {
   proyectoId: string
@@ -158,6 +172,35 @@ export const clientDashboardService = {
     const response = await api.get(url)
     return response.data
   },
+
+  async exportDashboard(
+    query?: DashboardClienteQueryDto,
+    format: ExportFormat = 'xlsx'
+  ): Promise<void> {
+    const params = new URLSearchParams()
+
+    if (query?.startDate) {
+      params.append('startDate', query.startDate)
+    }
+    if (query?.endDate) {
+      params.append('endDate', query.endDate)
+    }
+    if (query?.specificDay) {
+      params.append('specificDay', query.specificDay)
+    }
+    if (query?.proyectoId) {
+      params.append('proyectoId', query.proyectoId)
+    }
+    params.append('format', format)
+
+    const url = `${DASHBOARD_ENDPOINTS.CLIENT_EXPORT}${params.toString() ? `?${params.toString()}` : ''}`
+    const response = await api.get(url, {
+      responseType: 'blob',
+    })
+
+    const filename = `dashboard-cliente.${format}`
+    downloadFile(response.data, filename)
+  },
 }
 
 // Encargado Dashboard Service
@@ -196,6 +239,47 @@ export const encargadoDashboardService = {
     const response = await api.get(url)
     return response.data
   },
+
+  async exportDashboard(
+    query?: DashboardEncargadoQueryDto,
+    format: ExportFormat = 'xlsx'
+  ): Promise<void> {
+    const params = new URLSearchParams()
+
+    if (query?.startDate) {
+      params.append('startDate', query.startDate)
+    }
+    if (query?.endDate) {
+      params.append('endDate', query.endDate)
+    }
+    if (query?.specificDay) {
+      params.append('specificDay', query.specificDay)
+    }
+    if (query?.clienteId) {
+      params.append('clienteId', query.clienteId)
+    }
+    if (query?.proyectoId) {
+      params.append('proyectoId', query.proyectoId)
+    }
+    if (query?.tipoReclamoId) {
+      params.append('tipoReclamoId', query.tipoReclamoId)
+    }
+    if (query?.estado) {
+      params.append('estado', query.estado)
+    }
+    if (query?.areaId) {
+      params.append('areaId', query.areaId)
+    }
+    params.append('format', format)
+
+    const url = `${DASHBOARD_ENDPOINTS.ENCARGADO_EXPORT}${params.toString() ? `?${params.toString()}` : ''}`
+    const response = await api.get(url, {
+      responseType: 'blob',
+    })
+
+    const filename = `dashboard-encargado.${format}`
+    downloadFile(response.data, filename)
+  },
 }
 
 // Gerente Dashboard Service
@@ -230,5 +314,43 @@ export const gerenteDashboardService = {
     const url = `${DASHBOARD_ENDPOINTS.GERENTE_METRICS}${params.toString() ? `?${params.toString()}` : ''}`
     const response = await api.get(url)
     return response.data
+  },
+
+  async exportDashboard(
+    query?: DashboardGerenteQueryDto,
+    format: ExportFormat = 'xlsx'
+  ): Promise<void> {
+    const params = new URLSearchParams()
+
+    if (query?.startDate) {
+      params.append('startDate', query.startDate)
+    }
+    if (query?.endDate) {
+      params.append('endDate', query.endDate)
+    }
+    if (query?.estado) {
+      params.append('estado', query.estado)
+    }
+    if (query?.proyectoId) {
+      params.append('proyectoId', query.proyectoId)
+    }
+    if (query?.tipoReclamoId) {
+      params.append('tipoReclamoId', query.tipoReclamoId)
+    }
+    if (query?.criticidad) {
+      params.append('criticidad', query.criticidad)
+    }
+    if (query?.topLimit !== undefined) {
+      params.append('topLimit', query.topLimit.toString())
+    }
+    params.append('format', format)
+
+    const url = `${DASHBOARD_ENDPOINTS.GERENTE_EXPORT}${params.toString() ? `?${params.toString()}` : ''}`
+    const response = await api.get(url, {
+      responseType: 'blob',
+    })
+
+    const filename = `dashboard-gerente.${format}`
+    downloadFile(response.data, filename)
   },
 }

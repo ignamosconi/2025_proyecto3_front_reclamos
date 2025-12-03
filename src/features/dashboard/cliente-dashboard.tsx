@@ -10,8 +10,10 @@ import { DashboardFiltersComponent, DashboardFilters } from './components/dashbo
 import { ClaimsPerProjectChart } from './components/claims-per-project-chart'
 import { ClaimsByStatusChart } from './components/claims-by-status-chart'
 import { AverageResolutionTime } from './components/average-resolution-time'
+import { ExportButtons } from './components/export-buttons'
 import { useClientDashboardMetrics } from '@/hooks/use-dashboard-stats'
-import { useState, useMemo } from 'react'
+import { clientDashboardService, type ExportFormat, type DashboardClienteQueryDto } from '@/services/dashboard/dashboard.service'
+import { useState, useMemo, useCallback } from 'react'
 
 export function ClienteDashboard() {
   const [filters, setFilters] = useState<DashboardFilters>({})
@@ -26,8 +28,35 @@ export function ClienteDashboard() {
   
   const { data: clientMetrics } = useClientDashboardMetrics(stableFilters)
 
+  const handleExport = useCallback(async (format: ExportFormat) => {
+    const query: DashboardClienteQueryDto = {}
+    
+    // Convert filters to query format
+    if (stableFilters.specificDay) {
+      query.specificDay = stableFilters.specificDay.toISOString().split('T')[0]
+    } else {
+      if (stableFilters.dateFrom) {
+        query.startDate = stableFilters.dateFrom.toISOString().split('T')[0]
+      }
+      if (stableFilters.dateTo) {
+        query.endDate = stableFilters.dateTo.toISOString().split('T')[0]
+      }
+    }
+    
+    if (stableFilters.proyectoId) {
+      query.proyectoId = stableFilters.proyectoId
+    }
+    
+    await clientDashboardService.exportDashboard(query, format)
+  }, [stableFilters])
+
   return (
     <div className='space-y-6'>
+      {/* Export Buttons */}
+      <div className="flex justify-end">
+        <ExportButtons onExport={handleExport} />
+      </div>
+      
       {/* Filtros */}
       <DashboardFiltersComponent 
         filters={filters} 

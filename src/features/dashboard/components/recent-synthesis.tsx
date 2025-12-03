@@ -45,7 +45,7 @@ export function RecentSynthesis({ limit = 10 }: RecentSynthesisProps) {
     queryKey: ['all-synthesis', closedClaimsResponse?.data],
     queryFn: async () => {
       if (!closedClaimsResponse?.data) return []
-      
+
       const synthesisPromises = closedClaimsResponse.data.map(async (claim) => {
         try {
           const synthesis = await reclamosService.getSynthesis(claim._id)
@@ -60,7 +60,7 @@ export function RecentSynthesis({ limit = 10 }: RecentSynthesisProps) {
           return []
         }
       })
-      
+
       const results = await Promise.all(synthesisPromises)
       return results.flat()
     },
@@ -95,7 +95,7 @@ export function RecentSynthesis({ limit = 10 }: RecentSynthesisProps) {
           <FileText className='h-8 w-8 text-muted-foreground' />
         </div>
         <p className='text-muted-foreground text-sm text-center max-w-md'>
-          No hay síntesis disponibles en este momento. 
+          No hay síntesis disponibles en este momento.
           Los reclamos cerrados mostrarán sus síntesis aquí cuando estén disponibles.
         </p>
       </div>
@@ -114,8 +114,8 @@ export function RecentSynthesis({ limit = 10 }: RecentSynthesisProps) {
   return (
     <div className='space-y-4'>
       {sortedSynthesis.map((sintesis) => (
-        <Card 
-          key={sintesis._id} 
+        <Card
+          key={sintesis._id}
           className='hover:shadow-lg transition-all duration-200 border-l-4 border-l-primary/50'
         >
           <CardHeader className='pb-3'>
