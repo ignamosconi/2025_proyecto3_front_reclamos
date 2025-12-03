@@ -1,6 +1,5 @@
 import api from '@/lib/axios';
 import { RECLAMOS_ENDPOINTS } from '../endpoints';
-import { buildQueryParams } from '../endpoints';
 
 export enum Prioridad {
   ALTA = 'alta',
@@ -189,6 +188,18 @@ export const reclamosService = {
   // Obtener una síntesis específica
   async getSynthesisById(reclamoId: string, sintesisId: string): Promise<Sintesis> {
     const response = await api.get(RECLAMOS_ENDPOINTS.GET_SYNTHESIS_BY_ID(reclamoId, sintesisId));
+    return response.data;
+  },
+
+  // Autoasignar un encargado a un reclamo (US 11)
+  async autoAssign(reclamoId: string, encargadoId: string): Promise<Reclamo> {
+    const response = await api.post(RECLAMOS_ENDPOINTS.AUTO_ASSIGN(reclamoId), { encargadoId });
+    return response.data;
+  },
+
+  // Obtener encargados asignados a un reclamo
+  async getEncargados(reclamoId: string): Promise<any[]> {
+    const response = await api.get(RECLAMOS_ENDPOINTS.GET_ENCARGADOS(reclamoId));
     return response.data;
   },
 };

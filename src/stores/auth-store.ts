@@ -22,6 +22,7 @@ interface AuthUser {
   firstName?: string
   lastName?: string
   role: string
+  areas?: string[]
   exp: number
 }
 
@@ -95,6 +96,7 @@ export const useAuthStore = create<AuthState>()((set, get) => {
           firstName: user.firstName,
           lastName: user.lastName,
           role: user.role,
+          areas: user.areas,
           // Si no tenemos exp del token, usamos un tiempo por defecto (1 hora)
           exp: Math.floor(Date.now() / 1000) + 60 * 60 
         };

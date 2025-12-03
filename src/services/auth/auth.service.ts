@@ -19,6 +19,7 @@ export interface User {
   address?: string;
   phone?: string;
   role: string;
+  areas?: string[]; // IDs de las áreas asignadas al usuario
 }
 
 export interface AuthResponse extends TokenPair {

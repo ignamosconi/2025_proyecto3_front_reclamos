@@ -57,6 +57,8 @@ export const RECLAMOS_ENDPOINTS = {
   DELETE: (id: string) => `${API_BASE_URL}/reclamos/${id}`,
   CHANGE_STATE: (id: string) => `${API_BASE_URL}/reclamos/${id}/estado`,
   REASSIGN_AREA: (id: string, nuevaAreaId: string) => `${API_BASE_URL}/reclamos/${id}/reassign-area/${nuevaAreaId}`,
+  AUTO_ASSIGN: (id: string) => `${API_BASE_URL}/reclamos/${id}/encargados/auto-assign`,
+  GET_ENCARGADOS: (id: string) => `${API_BASE_URL}/reclamos/${id}/encargados`,
   GET_SYNTHESIS: (reclamoId: string) =>
     `${API_BASE_URL}/reclamos/${reclamoId}/sintesis`,
   GET_SYNTHESIS_BY_ID: (reclamoId: string, sintesisId: string) =>

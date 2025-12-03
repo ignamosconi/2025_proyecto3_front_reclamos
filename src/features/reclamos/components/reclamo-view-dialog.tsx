@@ -17,14 +17,16 @@ import { ReclamoSynthesisList } from './reclamo-synthesis-list'
 import { ReclamoImagesList } from './reclamo-images-list'
 import { ReclamoHistorialTimeline } from './reclamo-historial-timeline'
 import { EncuestaDisplay } from '@/features/encuesta/components/encuesta-display'
-import { EncuestaForm } from '@/features/encuesta/components/encuesta-form'
 import { useReclamos } from './reclamos-provider'
 import { useAuthStore } from '@/stores/auth-store'
-import { Settings, GitBranch } from 'lucide-react'
-import { useQuery } from '@tanstack/react-query'
+import { Settings, GitBranch, UserPlus } from 'lucide-react'
+import { useQuery, useMutation } from '@tanstack/react-query'
 import { encuestaService } from '@/services/encuesta/encuesta.service'
 import { useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
+import { reclamosService } from '@/services/reclamos/reclamos.service'
+import { toast } from 'sonner'
+import { useState, useEffect } from 'react'
 
 type ReclamoViewDialogProps = {
   currentRow: Reclamo
@@ -45,11 +47,40 @@ export function ReclamoViewDialog({
   const isClient = auth.hasRole('Cliente')
   const isFinalState = currentRow.estado === EstadoReclamo.RESUELTO || currentRow.estado === EstadoReclamo.RECHAZADO
 
+  const [encargados, setEncargados] = useState<any[]>([])
+
   // Fetch survey if claim is in final state
   const { data: encuesta, isLoading: isLoadingEncuesta } = useQuery({
     queryKey: ['encuesta', currentRow._id],
     queryFn: () => encuestaService.getByReclamoId(currentRow._id),
     enabled: open && isFinalState,
+  })
+
+  // Fetch encargados asignados al reclamo
+  const { data: encargadosData, isLoading: isLoadingEncargados } = useQuery({
+    queryKey: ['encargados', currentRow._id],
+    queryFn: () => reclamosService.getEncargados(currentRow._id),
+    enabled: open && isStaff,
+  })
+
+  useEffect(() => {
+    if (encargadosData) {
+      setEncargados(encargadosData)
+    }
+  }, [encargadosData])
+
+  // Mutation para autoasignarse
+  const autoAssignMutation = useMutation({
+    mutationFn: () => reclamosService.autoAssign(currentRow._id, auth.user?.id || ''),
+    onSuccess: () => {
+      toast.success('Te has asignado exitosamente al reclamo')
+      queryClient.invalidateQueries({ queryKey: ['reclamos'] })
+      queryClient.invalidateQueries({ queryKey: ['encargados', currentRow._id] })
+      onOpenChange(false)
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || 'Error al autoasignarse al reclamo')
+    },
   })
 
   const handleChangeState = () => {
@@ -60,14 +91,45 @@ export function ReclamoViewDialog({
     setOpen('reassign-area')
   }
 
-  const handleSurveySuccess = () => {
-    queryClient.invalidateQueries({ queryKey: ['encuesta', currentRow._id] })
-    queryClient.invalidateQueries({ queryKey: ['reclamos'] })
-  }
-
   const handleCompleteSurvey = () => {
     navigate({ to: '/reclamos/$reclamoId/encuesta', params: { reclamoId: currentRow._id } })
     onOpenChange(false)
+  }
+
+  const handleAutoAssign = () => {
+    autoAssignMutation.mutate()
+  }
+
+  // Verificar si el usuario puede autoasignarse
+  // 1. Debe ser Encargado o Gerente
+  // 2. El reclamo debe estar en estado Pendiente
+  // 3. No debe tener encargados asignados
+  // 4. El área del usuario debe coincidir con el área responsable del reclamo
+  const canAutoAssign = () => {
+    if (!isStaff || !auth.user) return false
+    if (currentRow.estado !== EstadoReclamo.PENDIENTE) return false
+    if (encargados && encargados.length > 0) return false
+    
+    // Verificar si el usuario pertenece al área del reclamo
+    const reclamoAreaId = typeof currentRow.fkArea === 'string' 
+      ? currentRow.fkArea 
+      : (currentRow.fkArea as any)?._id
+    
+    // Si el usuario tiene áreas asignadas, verificar que el área del reclamo esté entre ellas
+    // Las áreas pueden venir como strings (IDs) o como objetos completos
+    if (auth.user.areas && auth.user.areas.length > 0) {
+      const userAreaIds = auth.user.areas.map(area => 
+        typeof area === 'string' ? area : (area as any)._id
+      )
+      return userAreaIds.includes(reclamoAreaId)
+    }
+    
+    // Si el usuario es Gerente, puede autoasignarse a cualquier reclamo
+    if (auth.hasRole('Gerente')) {
+      return true
+    }
+    
+    return false
   }
 
   return (
@@ -83,6 +145,18 @@ export function ReclamoViewDialog({
             </div>
             {isStaff && !isFinalState && (
               <div className='flex gap-2'>
+                {canAutoAssign() && (
+                  <Button
+                    variant='default'
+                    size='sm'
+                    onClick={handleAutoAssign}
+                    className='gap-2'
+                    disabled={autoAssignMutation.isPending || isLoadingEncargados}
+                  >
+                    <UserPlus className='h-4 w-4' />
+                    {autoAssignMutation.isPending ? 'Asignando...' : 'Asignarme'}
+                  </Button>
+                )}
                 <Button
                   variant='outline'
                   size='sm'

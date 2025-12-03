@@ -238,19 +238,27 @@ export function ReclamoHistorialTimeline({ reclamoId }: ReclamoHistorialTimeline
                           Información adicional:
                         </p>
                         <div className='bg-muted/50 rounded-md p-3 space-y-1'>
-                          {evento.metadata.estado_anterior && (
-                            <div className='text-xs'>
-                              <span className='font-medium'>Estado anterior:</span>{' '}
-                              <Badge variant='outline' className='ml-1'>
-                                {evento.metadata.estado_anterior}
-                              </Badge>
-                            </div>
+                          {evento.metadata.estado_anterior && (evento.metadata.estado_actual || evento.metadata.estado_nuevo) && (
+                            <>
+                              <div className='text-xs'>
+                                <span className='font-medium'>Estado anterior:</span>{' '}
+                                <Badge variant='outline' className='ml-1'>
+                                  {evento.metadata.estado_anterior}
+                                </Badge>
+                              </div>
+                              <div className='text-xs'>
+                                <span className='font-medium'>Estado actual:</span>{' '}
+                                <Badge variant='outline' className='ml-1'>
+                                  {evento.metadata.estado_actual || evento.metadata.estado_nuevo}
+                                </Badge>
+                              </div>
+                            </>
                           )}
-                          {evento.metadata.estado_actual && (
+                          {!evento.metadata.estado_anterior && (evento.metadata.estado_actual || evento.metadata.estado_nuevo) && (
                             <div className='text-xs'>
-                              <span className='font-medium'>Estado actual:</span>{' '}
+                              <span className='font-medium'>Estado:</span>{' '}
                               <Badge variant='outline' className='ml-1'>
-                                {evento.metadata.estado_actual}
+                                {evento.metadata.estado_actual || evento.metadata.estado_nuevo}
                               </Badge>
                             </div>
                           )}
