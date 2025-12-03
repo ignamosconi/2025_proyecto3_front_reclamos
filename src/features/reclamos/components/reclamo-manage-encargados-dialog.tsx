@@ -44,7 +44,6 @@ interface EncargadoAsignacion {
   _id: string;
   fkEncargado: Encargado;
   fkReclamo: string;
-  isPrincipal: boolean;
   createdAt: string;
   updatedAt: string;
 }
