@@ -1,10 +1,25 @@
 'use client'
 
+import { useState } from 'react'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
+import {
+  usersService,
+  type UpdateProfileDto,
+} from '@/services/users/users.service'
+import { toast } from 'sonner'
+import { validatePassword } from '@/lib/validate-password'
 import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Form,
   FormControl,
@@ -14,13 +29,8 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { PasswordInput } from '@/components/password-input'
-import { validatePassword } from '@/lib/validate-password'
-import { usersService, type UpdateProfileDto } from '@/services/users/users.service'
-import { toast } from 'sonner'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { useQueryClient } from '@tanstack/react-query'
+import { PasswordInput } from '@/components/password-input'
 
 const formSchema = z
   .object({
@@ -29,6 +39,7 @@ const formSchema = z
     email: z.string().email('Ingresa un correo electrónico válido.'),
     password: z.string().transform((pwd) => pwd.trim()),
     passwordConfirmation: z.string().transform((pwd) => pwd.trim()),
+    activate2fa: z.boolean(),
   })
   .superRefine((data, ctx) => {
     // Si no se ingresó contraseña, no validar
@@ -71,13 +82,14 @@ type ProfileFormProps = {
     lastName: string
     email: string
     role?: string
+    activate2fa?: boolean
   }
 }
 
 export function ProfileForm({ user }: ProfileFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const queryClient = useQueryClient()
-  
+
   const form = useForm<ProfileFormType>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -86,37 +98,40 @@ export function ProfileForm({ user }: ProfileFormProps) {
       email: user.email || '',
       password: '',
       passwordConfirmation: '',
+      activate2fa: user.activate2fa || false,
     },
   })
 
   const onSubmit = async (values: ProfileFormType) => {
     try {
       setIsSubmitting(true)
-      
+
       const updateData: UpdateProfileDto = {
         firstName: values.firstName,
         lastName: values.lastName,
         email: values.email,
+        activate2fa: values.activate2fa,
       }
-      
+
       // Solo incluir password si se proporcionó
       if (values.password) {
         updateData.password = values.password
         updateData.passwordConfirmation = values.passwordConfirmation
       }
-      
+
       await usersService.updateProfile(updateData)
       toast.success('Perfil actualizado correctamente')
-      
+
       // Invalidar la query del usuario actual para refrescar los datos
       queryClient.invalidateQueries({ queryKey: ['currentUser'] })
-      
+
       // Limpiar campos de contraseña
       form.resetField('password')
       form.resetField('passwordConfirmation')
     } catch (error: any) {
       console.error('Error al actualizar perfil:', error)
-      const errorMessage = error.response?.data?.message || 'Error al actualizar el perfil'
+      const errorMessage =
+        error.response?.data?.message || 'Error al actualizar el perfil'
       toast.error(errorMessage)
     } finally {
       setIsSubmitting(false)
@@ -130,7 +145,8 @@ export function ProfileForm({ user }: ProfileFormProps) {
       <CardHeader>
         <CardTitle>Información Personal</CardTitle>
         <CardDescription>
-          Actualiza tu información personal. Los campos marcados con * son obligatorios.
+          Actualiza tu información personal. Los campos marcados con * son
+          obligatorios.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -160,7 +176,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name='lastName'
@@ -188,7 +204,8 @@ export function ProfileForm({ user }: ProfileFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    Correo Electrónico <span className='text-destructive'>*</span>
+                    Correo Electrónico{' '}
+                    <span className='text-destructive'>*</span>
                   </FormLabel>
                   <FormControl>
                     <Input
@@ -204,11 +221,12 @@ export function ProfileForm({ user }: ProfileFormProps) {
             />
 
             {user.role && (
-              <div className='rounded-lg border bg-muted/50 p-4'>
+              <div className='bg-muted/50 rounded-lg border p-4'>
                 <p className='text-sm font-medium'>Rol</p>
-                <p className='text-sm text-muted-foreground'>{user.role}</p>
-                <p className='mt-2 text-xs text-muted-foreground'>
-                  El rol no puede ser modificado. Solo un Gerente puede cambiar los roles de los usuarios.
+                <p className='text-muted-foreground text-sm'>{user.role}</p>
+                <p className='text-muted-foreground mt-2 text-xs'>
+                  El rol no puede ser modificado. Solo un Gerente puede cambiar
+                  los roles de los usuarios.
                 </p>
               </div>
             )}
@@ -217,10 +235,10 @@ export function ProfileForm({ user }: ProfileFormProps) {
 
             <div>
               <h3 className='mb-4 text-lg font-semibold'>Cambiar Contraseña</h3>
-              <p className='mb-4 text-sm text-muted-foreground'>
+              <p className='text-muted-foreground mb-4 text-sm'>
                 Deja estos campos vacíos si no deseas cambiar tu contraseña.
               </p>
-              
+
               <div className='space-y-4'>
                 <FormField
                   control={form.control}
@@ -239,7 +257,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name='passwordConfirmation'
@@ -260,6 +278,30 @@ export function ProfileForm({ user }: ProfileFormProps) {
                 />
               </div>
             </div>
+
+            <Separator />
+
+            <FormField
+              control={form.control}
+              name='activate2fa'
+              render={({ field }) => (
+                <FormItem className='flex flex-row items-start space-y-0 space-x-3 rounded-md border p-4'>
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className='space-y-1 leading-none'>
+                    <FormLabel>Autenticación de dos factores (2FA)</FormLabel>
+                    <CardDescription>
+                      Activa esta opción para requerir un código enviado a tu
+                      correo al iniciar sesión.
+                    </CardDescription>
+                  </div>
+                </FormItem>
+              )}
+            />
 
             <div className='flex justify-end gap-4'>
               <Button
@@ -283,4 +325,3 @@ export function ProfileForm({ user }: ProfileFormProps) {
     </Card>
   )
 }
-

@@ -2,8 +2,10 @@ import { useState } from 'react'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useNavigate } from '@tanstack/react-router'
-import { showSubmittedData } from '@/lib/show-submitted-data'
+import { useNavigate, useSearch } from '@tanstack/react-router'
+import { authService } from '@/services/auth/auth.service'
+import { toast } from 'sonner'
+import { useAuthStore } from '@/stores/auth-store'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
@@ -34,6 +36,9 @@ export function OtpForm({ className, ...props }: OtpFormProps) {
   const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(false)
 
+  const search = useSearch({ from: '/(auth)/otp' }) as { email?: string }
+  const { auth } = useAuthStore()
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: { otp: '' },
@@ -41,14 +46,35 @@ export function OtpForm({ className, ...props }: OtpFormProps) {
 
   const otp = form.watch('otp')
 
-  function onSubmit(data: z.infer<typeof formSchema>) {
-    setIsLoading(true)
-    showSubmittedData(data)
+  async function onSubmit(data: z.infer<typeof formSchema>) {
+    if (!search.email) {
+      toast.error('Email no encontrado. Por favor inicia sesión nuevamente.')
+      navigate({ to: '/sign-in' })
+      return
+    }
 
-    setTimeout(() => {
-      setIsLoading(false)
+    setIsLoading(true)
+    try {
+      const response = await authService.verify2fa(search.email, data.otp)
+
+      auth.setTokens(response.accessToken, response.refreshToken)
+
+      // Fetch user data to set in store and redirect correctly
+      // We can't easily get user data here without another call or decoding token
+      // For now, let's redirect to dashboard and let the guard handle it or fetch user
+      // Ideally authService.verify2fa should return user or we fetch it.
+      // But verify2fa returns TokenPair.
+      // Let's just redirect to '/' and let the app handle fetching user info if needed
+      // or we can decode the token if we had a decoder.
+      // Assuming the app fetches user on mount or we can call me endpoint.
+
+      toast.success('Verificación exitosa')
       navigate({ to: '/' })
-    }, 1000)
+    } catch (error) {
+      toast.error('Código inválido o expirado')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (

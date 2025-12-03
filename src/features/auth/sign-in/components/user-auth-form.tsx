@@ -3,12 +3,12 @@ import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate } from '@tanstack/react-router'
+import { authService } from '@/services/auth/auth.service'
 import { Loader2, LogIn } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
-import { cn } from '@/lib/utils'
-import { authService } from '@/services/auth/auth.service'
 import { getDashboardRouteByRole } from '@/lib/auth-routes'
+import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -60,20 +60,27 @@ export function UserAuthForm({
       const loginPromise = await authService.login({
         email: data.email,
         password: data.password,
-      });
+      })
 
-      if (!loginPromise || !loginPromise.accessToken) {
+      if (!loginPromise) {
         toast.error('Respuesta inválida del servidor')
-        return;
+        return
+      }
+
+      if ('requires2fa' in loginPromise && loginPromise.requires2fa) {
+        navigate({ to: '/otp', search: { email: (loginPromise as any).email } })
+        return
       }
 
       // The auth service already saves tokens to cookies
       // We just need to update the store with the tokens
-      auth.setTokens(loginPromise.accessToken, loginPromise.refreshToken);
+      if ('accessToken' in loginPromise) {
+        auth.setTokens(loginPromise.accessToken, loginPromise.refreshToken)
+      }
 
       // Si tenemos datos del usuario, los guardamos en el store
-      if (loginPromise.user) {
-        auth.setUser(loginPromise.user);
+      if ('user' in loginPromise && loginPromise.user) {
+        auth.setUser(loginPromise.user)
       }
 
       toast.success('Inicio de sesión exitoso')
@@ -81,53 +88,59 @@ export function UserAuthForm({
       // Redirigimos al usuario según su rol
       // Si hay un redirectTo (por ejemplo, si intentó acceder a una ruta protegida),
       // usamos ese. Si no, redirigimos según el rol
-      let targetPath = redirectTo;
-      
-      if (!targetPath && loginPromise.user?.role) {
-        targetPath = getDashboardRouteByRole(loginPromise.user.role);
+      let targetPath = redirectTo
+
+      if (!targetPath && 'user' in loginPromise && loginPromise.user?.role) {
+        targetPath = getDashboardRouteByRole(loginPromise.user.role)
       } else if (!targetPath) {
         // Si no tenemos rol, intentamos obtenerlo del token
-        const user = auth.user;
+        const user = auth.user
         if (user?.role) {
-          targetPath = getDashboardRouteByRole(user.role);
+          targetPath = getDashboardRouteByRole(user.role)
         } else {
-          targetPath = '/';
+          targetPath = '/'
         }
       }
-      
-      navigate({ to: targetPath, replace: true });
-      
+
+      navigate({ to: targetPath, replace: true })
     } catch (error: any) {
-      console.error('Error en inicio de sesión:', error);
-      
+      console.error('Error en inicio de sesión:', error)
+
       // Traducir mensajes de error comunes del backend
-      let errorMessage = 'Error al iniciar sesión. Por favor, intenta nuevamente.';
-      
+      let errorMessage =
+        'Error al iniciar sesión. Por favor, intenta nuevamente.'
+
       if (error.response?.data?.message) {
-        const backendMessage = error.response.data.message;
-        
+        const backendMessage = error.response.data.message
+
         // Traducir mensajes específicos
-        if (backendMessage.includes('Invalid credentials') || 
-            backendMessage.includes('Credenciales inválidas') ||
-            backendMessage.includes('incorrect')) {
-          errorMessage = 'Correo electrónico o contraseña incorrectos';
-        } else if (backendMessage.includes('not found') || 
-                   backendMessage.includes('no encontrado')) {
-          errorMessage = 'Usuario no encontrado';
-        } else if (backendMessage.includes('Unauthorized') || 
-                   backendMessage.includes('No autorizado')) {
-          errorMessage = 'Credenciales inválidas';
+        if (
+          backendMessage.includes('Invalid credentials') ||
+          backendMessage.includes('Credenciales inválidas') ||
+          backendMessage.includes('incorrect')
+        ) {
+          errorMessage = 'Correo electrónico o contraseña incorrectos'
+        } else if (
+          backendMessage.includes('not found') ||
+          backendMessage.includes('no encontrado')
+        ) {
+          errorMessage = 'Usuario no encontrado'
+        } else if (
+          backendMessage.includes('Unauthorized') ||
+          backendMessage.includes('No autorizado')
+        ) {
+          errorMessage = 'Credenciales inválidas'
         } else {
           // Usar el mensaje del backend si está en español
-          errorMessage = backendMessage;
+          errorMessage = backendMessage
         }
       } else if (error.message) {
-        errorMessage = error.message;
+        errorMessage = error.message
       }
-      
-      toast.error(errorMessage);
+
+      toast.error(errorMessage)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
   }
 

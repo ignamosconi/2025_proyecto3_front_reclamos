@@ -30,11 +30,12 @@ import { Route as AuthenticatedProyectosRouteRouteImport } from './routes/_authe
 import { Route as AuthenticatedProfileRouteRouteImport } from './routes/_authenticated/profile/route'
 import { Route as AuthenticatedAreasRouteRouteImport } from './routes/_authenticated/areas/route'
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
-import { Route as AuthenticatedBrandsIndexRouteImport } from './routes/_authenticated/brands/index'
 import { Route as ClerkAuthenticatedUserManagementRouteImport } from './routes/clerk/_authenticated/user-management'
 import { Route as ClerkauthSignUpRouteImport } from './routes/clerk/(auth)/sign-up'
 import { Route as ClerkauthSignInRouteImport } from './routes/clerk/(auth)/sign-in'
 import { Route as AuthenticatedErrorsErrorRouteImport } from './routes/_authenticated/errors/$error'
+import { Route as AuthenticatedDashboardInicioRouteRouteImport } from './routes/_authenticated/dashboard/inicio/route'
+import { Route as AuthenticatedReclamosReclamoIdEncuestaRouteRouteImport } from './routes/_authenticated/reclamos/$reclamoId/encuesta/route'
 
 const ClerkRouteRoute = ClerkRouteRouteImport.update({
   id: '/clerk',
@@ -142,12 +143,6 @@ const AuthenticatedUsersIndexRoute = AuthenticatedUsersIndexRouteImport.update({
   path: '/users/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedBrandsIndexRoute =
-  AuthenticatedBrandsIndexRouteImport.update({
-    id: '/brands/',
-    path: '/brands/',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 const ClerkAuthenticatedUserManagementRoute =
   ClerkAuthenticatedUserManagementRouteImport.update({
     id: '/user-management',
@@ -170,13 +165,25 @@ const AuthenticatedErrorsErrorRoute =
     path: '/errors/$error',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedDashboardInicioRouteRoute =
+  AuthenticatedDashboardInicioRouteRouteImport.update({
+    id: '/dashboard/inicio',
+    path: '/dashboard/inicio',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedReclamosReclamoIdEncuestaRouteRoute =
+  AuthenticatedReclamosReclamoIdEncuestaRouteRouteImport.update({
+    id: '/$reclamoId/encuesta',
+    path: '/$reclamoId/encuesta',
+    getParentRoute: () => AuthenticatedReclamosRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/clerk': typeof ClerkAuthenticatedRouteRouteWithChildren
   '/areas': typeof AuthenticatedAreasRouteRoute
   '/profile': typeof AuthenticatedProfileRouteRoute
   '/proyectos': typeof AuthenticatedProyectosRouteRoute
-  '/reclamos': typeof AuthenticatedReclamosRouteRoute
+  '/reclamos': typeof AuthenticatedReclamosRouteRouteWithChildren
   '/tipo-reclamo': typeof AuthenticatedTipoReclamoRouteRoute
   '/clerk/': typeof ClerkauthRouteRouteWithChildren
   '/forgot-password': typeof authForgotPasswordRoute
@@ -190,18 +197,19 @@ export interface FileRoutesByFullPath {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/': typeof AuthenticatedIndexRoute
+  '/dashboard/inicio': typeof AuthenticatedDashboardInicioRouteRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
   '/clerk/sign-in': typeof ClerkauthSignInRoute
   '/clerk/sign-up': typeof ClerkauthSignUpRoute
   '/clerk/user-management': typeof ClerkAuthenticatedUserManagementRoute
-  '/brands': typeof AuthenticatedBrandsIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/reclamos/$reclamoId/encuesta': typeof AuthenticatedReclamosReclamoIdEncuestaRouteRoute
 }
 export interface FileRoutesByTo {
   '/areas': typeof AuthenticatedAreasRouteRoute
   '/profile': typeof AuthenticatedProfileRouteRoute
   '/proyectos': typeof AuthenticatedProyectosRouteRoute
-  '/reclamos': typeof AuthenticatedReclamosRouteRoute
+  '/reclamos': typeof AuthenticatedReclamosRouteRouteWithChildren
   '/tipo-reclamo': typeof AuthenticatedTipoReclamoRouteRoute
   '/clerk': typeof ClerkAuthenticatedRouteRouteWithChildren
   '/forgot-password': typeof authForgotPasswordRoute
@@ -215,12 +223,13 @@ export interface FileRoutesByTo {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/': typeof AuthenticatedIndexRoute
+  '/dashboard/inicio': typeof AuthenticatedDashboardInicioRouteRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
   '/clerk/sign-in': typeof ClerkauthSignInRoute
   '/clerk/sign-up': typeof ClerkauthSignUpRoute
   '/clerk/user-management': typeof ClerkAuthenticatedUserManagementRoute
-  '/brands': typeof AuthenticatedBrandsIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/reclamos/$reclamoId/encuesta': typeof AuthenticatedReclamosReclamoIdEncuestaRouteRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -229,7 +238,7 @@ export interface FileRoutesById {
   '/_authenticated/areas': typeof AuthenticatedAreasRouteRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRouteRoute
   '/_authenticated/proyectos': typeof AuthenticatedProyectosRouteRoute
-  '/_authenticated/reclamos': typeof AuthenticatedReclamosRouteRoute
+  '/_authenticated/reclamos': typeof AuthenticatedReclamosRouteRouteWithChildren
   '/_authenticated/tipo-reclamo': typeof AuthenticatedTipoReclamoRouteRoute
   '/clerk/(auth)': typeof ClerkauthRouteRouteWithChildren
   '/clerk/_authenticated': typeof ClerkAuthenticatedRouteRouteWithChildren
@@ -244,12 +253,13 @@ export interface FileRoutesById {
   '/(errors)/500': typeof errors500Route
   '/(errors)/503': typeof errors503Route
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/dashboard/inicio': typeof AuthenticatedDashboardInicioRouteRoute
   '/_authenticated/errors/$error': typeof AuthenticatedErrorsErrorRoute
   '/clerk/(auth)/sign-in': typeof ClerkauthSignInRoute
   '/clerk/(auth)/sign-up': typeof ClerkauthSignUpRoute
   '/clerk/_authenticated/user-management': typeof ClerkAuthenticatedUserManagementRoute
-  '/_authenticated/brands/': typeof AuthenticatedBrandsIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
+  '/_authenticated/reclamos/$reclamoId/encuesta': typeof AuthenticatedReclamosReclamoIdEncuestaRouteRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -272,12 +282,13 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/'
+    | '/dashboard/inicio'
     | '/errors/$error'
     | '/clerk/sign-in'
     | '/clerk/sign-up'
     | '/clerk/user-management'
-    | '/brands'
     | '/users'
+    | '/reclamos/$reclamoId/encuesta'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/areas'
@@ -297,12 +308,13 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/'
+    | '/dashboard/inicio'
     | '/errors/$error'
     | '/clerk/sign-in'
     | '/clerk/sign-up'
     | '/clerk/user-management'
-    | '/brands'
     | '/users'
+    | '/reclamos/$reclamoId/encuesta'
   id:
     | '__root__'
     | '/_authenticated'
@@ -325,12 +337,13 @@ export interface FileRouteTypes {
     | '/(errors)/500'
     | '/(errors)/503'
     | '/_authenticated/'
+    | '/_authenticated/dashboard/inicio'
     | '/_authenticated/errors/$error'
     | '/clerk/(auth)/sign-in'
     | '/clerk/(auth)/sign-up'
     | '/clerk/_authenticated/user-management'
-    | '/_authenticated/brands/'
     | '/_authenticated/users/'
+    | '/_authenticated/reclamos/$reclamoId/encuesta'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -497,13 +510,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedUsersIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/brands/': {
-      id: '/_authenticated/brands/'
-      path: '/brands'
-      fullPath: '/brands'
-      preLoaderRoute: typeof AuthenticatedBrandsIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/clerk/_authenticated/user-management': {
       id: '/clerk/_authenticated/user-management'
       path: '/user-management'
@@ -532,18 +538,47 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedErrorsErrorRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/dashboard/inicio': {
+      id: '/_authenticated/dashboard/inicio'
+      path: '/dashboard/inicio'
+      fullPath: '/dashboard/inicio'
+      preLoaderRoute: typeof AuthenticatedDashboardInicioRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/reclamos/$reclamoId/encuesta': {
+      id: '/_authenticated/reclamos/$reclamoId/encuesta'
+      path: '/$reclamoId/encuesta'
+      fullPath: '/reclamos/$reclamoId/encuesta'
+      preLoaderRoute: typeof AuthenticatedReclamosReclamoIdEncuestaRouteRouteImport
+      parentRoute: typeof AuthenticatedReclamosRouteRoute
+    }
   }
 }
+
+interface AuthenticatedReclamosRouteRouteChildren {
+  AuthenticatedReclamosReclamoIdEncuestaRouteRoute: typeof AuthenticatedReclamosReclamoIdEncuestaRouteRoute
+}
+
+const AuthenticatedReclamosRouteRouteChildren: AuthenticatedReclamosRouteRouteChildren =
+  {
+    AuthenticatedReclamosReclamoIdEncuestaRouteRoute:
+      AuthenticatedReclamosReclamoIdEncuestaRouteRoute,
+  }
+
+const AuthenticatedReclamosRouteRouteWithChildren =
+  AuthenticatedReclamosRouteRoute._addFileChildren(
+    AuthenticatedReclamosRouteRouteChildren,
+  )
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAreasRouteRoute: typeof AuthenticatedAreasRouteRoute
   AuthenticatedProfileRouteRoute: typeof AuthenticatedProfileRouteRoute
   AuthenticatedProyectosRouteRoute: typeof AuthenticatedProyectosRouteRoute
-  AuthenticatedReclamosRouteRoute: typeof AuthenticatedReclamosRouteRoute
+  AuthenticatedReclamosRouteRoute: typeof AuthenticatedReclamosRouteRouteWithChildren
   AuthenticatedTipoReclamoRouteRoute: typeof AuthenticatedTipoReclamoRouteRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedDashboardInicioRouteRoute: typeof AuthenticatedDashboardInicioRouteRoute
   AuthenticatedErrorsErrorRoute: typeof AuthenticatedErrorsErrorRoute
-  AuthenticatedBrandsIndexRoute: typeof AuthenticatedBrandsIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
 }
 
@@ -551,11 +586,12 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAreasRouteRoute: AuthenticatedAreasRouteRoute,
   AuthenticatedProfileRouteRoute: AuthenticatedProfileRouteRoute,
   AuthenticatedProyectosRouteRoute: AuthenticatedProyectosRouteRoute,
-  AuthenticatedReclamosRouteRoute: AuthenticatedReclamosRouteRoute,
+  AuthenticatedReclamosRouteRoute: AuthenticatedReclamosRouteRouteWithChildren,
   AuthenticatedTipoReclamoRouteRoute: AuthenticatedTipoReclamoRouteRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedDashboardInicioRouteRoute:
+    AuthenticatedDashboardInicioRouteRoute,
   AuthenticatedErrorsErrorRoute: AuthenticatedErrorsErrorRoute,
-  AuthenticatedBrandsIndexRoute: AuthenticatedBrandsIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
 }
 
