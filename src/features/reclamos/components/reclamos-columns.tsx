@@ -84,6 +84,22 @@ export const reclamosColumns: ColumnDef<Reclamo>[] = [
         </Badge>
       )
     },
+    sortingFn: (rowA, rowB) => {
+      const prioridadA = rowA.getValue('prioridad') as Prioridad
+      const prioridadB = rowB.getValue('prioridad') as Prioridad
+      
+      // Mapear prioridades a números para ordenamiento correcto
+      const prioridadOrder: Record<Prioridad, number> = {
+        [Prioridad.BAJA]: 1,
+        [Prioridad.MEDIA]: 2,
+        [Prioridad.ALTA]: 3,
+      }
+      
+      const orderA = prioridadOrder[prioridadA] ?? 0
+      const orderB = prioridadOrder[prioridadB] ?? 0
+      
+      return orderA - orderB
+    },
   },
   {
     accessorKey: 'criticidad',
