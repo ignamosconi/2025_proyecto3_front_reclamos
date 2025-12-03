@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { useCallback, useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { proyectosService } from '@/services/proyectos/proyectos.service'
@@ -116,20 +117,39 @@ export function DashboardFiltersComponent({
   const hasActiveFilters = filters.dateFrom || filters.dateTo || filters.specificDay || filters.proyectoId
 
   return (
-    <div className="space-y-4 rounded-lg border p-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium">Filtros</h3>
-        {hasActiveFilters && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleClearFilters}
-            className="h-8 px-2 text-xs"
-          >
-            Limpiar filtros
-          </Button>
-        )}
-      </div>
+    <Card className="shadow-sm">
+      <CardHeader className="pb-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="rounded-lg bg-primary/10 p-1.5">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                className="text-primary h-4 w-4"
+              >
+                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+              </svg>
+            </div>
+            <h3 className="text-base font-semibold">Filtros de Búsqueda</h3>
+          </div>
+          {hasActiveFilters && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleClearFilters}
+              className="h-8 px-3 text-xs font-medium"
+            >
+              Limpiar todo
+            </Button>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4 pt-0">
 
       {showClientFilters && (
         <div className="space-y-2">
@@ -280,6 +300,7 @@ export function DashboardFiltersComponent({
           </Select>
         </div>
       )}
-    </div>
+      </CardContent>
+    </Card>
   )
 }

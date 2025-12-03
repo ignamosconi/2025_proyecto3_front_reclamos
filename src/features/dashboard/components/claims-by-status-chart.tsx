@@ -54,17 +54,58 @@ export function ClaimsByStatusChart({ filters }: ClaimsByStatusChartProps) {
 
   if (chartData.length === 0) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Reclamos por Estado</CardTitle>
-          <CardDescription>
-            Cantidad de reclamos agrupados por estado
-            {filters?.proyectoId && ' (filtrado por proyecto)'}
-          </CardDescription>
+      <Card className="shadow-sm">
+        <CardHeader className="border-b bg-gradient-to-r from-background to-muted/20">
+          <div className="flex items-center gap-3">
+            <div className="rounded-lg bg-primary/10 p-2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                className="text-primary h-5 w-5"
+              >
+                <line x1="18" y1="20" x2="18" y2="10" />
+                <line x1="12" y1="20" x2="12" y2="4" />
+                <line x1="6" y1="20" x2="6" y2="14" />
+              </svg>
+            </div>
+            <div>
+              <CardTitle className="text-lg">Reclamos por Estado</CardTitle>
+              <CardDescription className="text-xs">
+                Distribución de reclamos según su estado actual
+                {filters?.proyectoId && ' • Filtrado por proyecto'}
+              </CardDescription>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
-          <div className="flex h-[350px] items-center justify-center text-muted-foreground">
-            No hay datos disponibles
+          <div className="flex flex-col items-center justify-center h-[350px] text-center px-4">
+            <div className="rounded-full bg-muted p-4 mb-4">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                className="text-muted-foreground h-8 w-8"
+              >
+                <line x1="18" y1="20" x2="18" y2="10" />
+                <line x1="12" y1="20" x2="12" y2="4" />
+                <line x1="6" y1="20" x2="6" y2="14" />
+              </svg>
+            </div>
+            <p className="text-muted-foreground text-sm font-medium">
+              No hay datos disponibles
+            </p>
+            <p className="text-muted-foreground text-xs mt-1">
+              No se encontraron reclamos para el período seleccionado
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -91,40 +132,72 @@ export function ClaimsByStatusChart({ filters }: ClaimsByStatusChartProps) {
     .filter((item) => item.cantidad > 0 || chartData.some((d) => d.estado === item.originalEstado))
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Reclamos por Estado</CardTitle>
-        <CardDescription>
-          Cantidad de reclamos agrupados por estado
-          {filters?.proyectoId && ' (filtrado por proyecto)'}
-        </CardDescription>
+    <Card className="shadow-sm hover:shadow-md transition-shadow duration-200">
+      <CardHeader className="border-b bg-gradient-to-r from-background to-muted/20">
+        <div className="flex items-center gap-3">
+          <div className="rounded-lg bg-primary/10 p-2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              className="text-primary h-5 w-5"
+            >
+              <line x1="18" y1="20" x2="18" y2="10" />
+              <line x1="12" y1="20" x2="12" y2="4" />
+              <line x1="6" y1="20" x2="6" y2="14" />
+            </svg>
+          </div>
+          <div>
+            <CardTitle className="text-lg">Reclamos por Estado</CardTitle>
+            <CardDescription className="text-xs">
+              Distribución de reclamos según su estado actual
+              {filters?.proyectoId && ' • Filtrado por proyecto'}
+            </CardDescription>
+          </div>
+        </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-6">
         <ResponsiveContainer width="100%" height={350}>
-          <BarChart data={formattedData}>
+          <BarChart data={formattedData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
             <XAxis
               dataKey="estado"
-              stroke="#888888"
+              stroke="hsl(var(--muted-foreground))"
               fontSize={12}
               tickLine={false}
               axisLine={false}
+              tick={{ fill: 'hsl(var(--muted-foreground))' }}
             />
             <YAxis
-              stroke="#888888"
+              stroke="hsl(var(--muted-foreground))"
               fontSize={12}
               tickLine={false}
               axisLine={false}
               width={60}
+              tick={{ fill: 'hsl(var(--muted-foreground))' }}
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: 'hsl(var(--background))',
+                backgroundColor: 'hsl(var(--popover))',
                 border: '1px solid hsl(var(--border))',
-                borderRadius: '6px',
+                borderRadius: '8px',
+                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
               }}
+              cursor={{ fill: 'hsl(var(--muted))', opacity: 0.1 }}
             />
-            <Legend />
-            <Bar dataKey="cantidad" name="Cantidad" radius={[4, 4, 0, 0]}>
+            <Legend 
+              wrapperStyle={{ paddingTop: '20px' }}
+              iconType="square"
+            />
+            <Bar 
+              dataKey="cantidad" 
+              name="Cantidad de Reclamos" 
+              radius={[8, 8, 0, 0]}
+              maxBarSize={80}
+            >
               {formattedData.map((entry, index) => (
                 <Cell
                   key={`cell-${index}`}
