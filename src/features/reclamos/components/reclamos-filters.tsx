@@ -80,7 +80,7 @@ export function ReclamosFilters({ search, navigate }: ReclamosFiltersProps) {
       <div className='flex-1 min-w-[200px]'>
         <Label htmlFor='estado'>Estado</Label>
         <Select value={estado} onValueChange={setEstado}>
-          <SelectTrigger id='estado'>
+          <SelectTrigger id='estado' className='mt-2'>
             <SelectValue placeholder='Todos los estados' />
           </SelectTrigger>
           <SelectContent>
@@ -97,7 +97,7 @@ export function ReclamosFilters({ search, navigate }: ReclamosFiltersProps) {
       <div className='flex-1 min-w-[200px]'>
         <Label htmlFor='tipoReclamo'>Tipo de Reclamo</Label>
         <Select value={tipoReclamo} onValueChange={setTipoReclamo}>
-          <SelectTrigger id='tipoReclamo'>
+          <SelectTrigger id='tipoReclamo' className='mt-2'>
             <SelectValue placeholder='Todos los tipos' />
           </SelectTrigger>
           <SelectContent>
@@ -112,12 +112,13 @@ export function ReclamosFilters({ search, navigate }: ReclamosFiltersProps) {
       </div>
 
       <div className='flex-1 min-w-[150px]'>
-        <Label htmlFor='fechaInicio'>Fecha Inicio</Label>
+        <Label htmlFor='fechaInicio' >Fecha Inicio</Label>
         <Input
           id='fechaInicio'
           type='date'
           value={fechaInicio}
           onChange={(e) => setFechaInicio(e.target.value)}
+          className='mt-2'
         />
       </div>
 
@@ -128,6 +129,7 @@ export function ReclamosFilters({ search, navigate }: ReclamosFiltersProps) {
           type='date'
           value={fechaFin}
           onChange={(e) => setFechaFin(e.target.value)}
+          className='mt-2'
         />
       </div>
 
