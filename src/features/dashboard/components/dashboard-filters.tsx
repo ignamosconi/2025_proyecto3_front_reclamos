@@ -22,6 +22,10 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { useCallback, useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { proyectosService } from '@/services/proyectos/proyectos.service'
+import { usersService } from '@/services/users/users.service'
+import { tipoReclamoService } from '@/services/tipo-reclamo/tipo-reclamo.service'
+import { areasService } from '@/services/areas/areas.service'
+import { EstadoReclamo } from '@/services/reclamos/reclamos.service'
 import { useAuthStore } from '@/stores/auth-store'
 import type { DashboardFilters } from '@/hooks/use-dashboard-stats'
 
@@ -32,12 +36,14 @@ interface DashboardFiltersProps {
   filters: DashboardFilters
   onFiltersChange: (filters: DashboardFilters) => void
   showClientFilters?: boolean
+  showEncargadoFilters?: boolean
 }
 
 export function DashboardFiltersComponent({ 
   filters, 
   onFiltersChange,
-  showClientFilters = false 
+  showClientFilters = false,
+  showEncargadoFilters = false,
 }: DashboardFiltersProps) {
   const { auth } = useAuthStore()
   const [dateFilterMode, setDateFilterMode] = useState<'range' | 'single'>('range')
@@ -52,7 +58,47 @@ export function DashboardFiltersComponent({
     enabled: showClientFilters && !!auth.user?.id,
   })
 
-  const proyectos = proyectosData?.data || []
+  // Fetch all projects for encargado
+  const { data: allProyectosData } = useQuery({
+    queryKey: ['proyectos', 'all'],
+    queryFn: () => proyectosService.getAll({ 
+      limit: 100 
+    }),
+    enabled: showEncargadoFilters,
+  })
+
+  // Fetch clients for encargado
+  const { data: clientesData } = useQuery({
+    queryKey: ['users', 'clientes'],
+    queryFn: () => usersService.getAll({ 
+      role: 'Cliente',
+      limit: 100 
+    }),
+    enabled: showEncargadoFilters,
+  })
+
+  // Fetch tipo reclamos
+  const { data: tipoReclamosData } = useQuery({
+    queryKey: ['tipo-reclamos', 'all'],
+    queryFn: () => tipoReclamoService.getAll({ 
+      limit: 100 
+    }),
+    enabled: showEncargadoFilters,
+  })
+
+  // Fetch areas
+  const { data: areasData } = useQuery({
+    queryKey: ['areas', 'all'],
+    queryFn: () => areasService.getAll({ 
+      limit: 100 
+    }),
+    enabled: showEncargadoFilters,
+  })
+
+  const proyectos = showClientFilters ? (proyectosData?.data || []) : (allProyectosData?.data || [])
+  const clientes = clientesData?.data || []
+  const tipoReclamos = tipoReclamosData?.data || []
+  const areas = areasData?.data || []
 
   useEffect(() => {
     // If specificDay is set, switch to single mode
@@ -109,12 +155,42 @@ export function DashboardFiltersComponent({
     })
   }, [filters, onFiltersChange])
 
+  const handleClienteChange = useCallback((clienteId: string) => {
+    onFiltersChange({ 
+      ...filters, 
+      clienteId: clienteId === 'all' ? undefined : clienteId 
+    })
+  }, [filters, onFiltersChange])
+
+  const handleTipoReclamoChange = useCallback((tipoReclamoId: string) => {
+    onFiltersChange({ 
+      ...filters, 
+      tipoReclamoId: tipoReclamoId === 'all' ? undefined : tipoReclamoId 
+    })
+  }, [filters, onFiltersChange])
+
+  const handleEstadoChange = useCallback((estado: string) => {
+    onFiltersChange({ 
+      ...filters, 
+      estado: estado === 'all' ? undefined : estado as EstadoReclamo
+    })
+  }, [filters, onFiltersChange])
+
+  const handleAreaChange = useCallback((areaId: string) => {
+    onFiltersChange({ 
+      ...filters, 
+      areaId: areaId === 'all' ? undefined : areaId 
+    })
+  }, [filters, onFiltersChange])
+
   const handleClearFilters = useCallback(() => {
     onFiltersChange({})
     setDateFilterMode('range')
   }, [onFiltersChange])
 
-  const hasActiveFilters = filters.dateFrom || filters.dateTo || filters.specificDay || filters.proyectoId
+  const hasActiveFilters = filters.dateFrom || filters.dateTo || filters.specificDay || 
+    filters.proyectoId || filters.clienteId || filters.tipoReclamoId || 
+    filters.estado || filters.areaId
 
   return (
     <Card className="shadow-sm">
@@ -151,7 +227,7 @@ export function DashboardFiltersComponent({
       </CardHeader>
       <CardContent className="space-y-4 pt-0">
 
-      {showClientFilters && (
+      {(showClientFilters || showEncargadoFilters) && (
         <div className="space-y-2">
           <Label>Modo de filtrado de fechas</Label>
           <RadioGroup
@@ -279,25 +355,133 @@ export function DashboardFiltersComponent({
         )}
       </div>
 
-      {showClientFilters && (
-        <div className="space-y-2">
-          <Label htmlFor="proyecto-filter">Filtrar por proyecto (gráfico de estados)</Label>
-          <Select
-            value={filters.proyectoId || 'all'}
-            onValueChange={handleProjectChange}
-          >
-            <SelectTrigger id="proyecto-filter" className="w-full">
-              <SelectValue placeholder="Todos los proyectos" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos los proyectos</SelectItem>
-              {proyectos.map((proyecto) => (
-                <SelectItem key={proyecto._id} value={proyecto._id}>
-                  {proyecto.nombre}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      {(showClientFilters || showEncargadoFilters) && (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {showClientFilters && (
+            <div className="space-y-2">
+              <Label htmlFor="proyecto-filter">Filtrar por proyecto (gráfico de estados)</Label>
+              <Select
+                value={filters.proyectoId || 'all'}
+                onValueChange={handleProjectChange}
+              >
+                <SelectTrigger id="proyecto-filter" className="w-full">
+                  <SelectValue placeholder="Todos los proyectos" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los proyectos</SelectItem>
+                  {proyectos.map((proyecto) => (
+                    <SelectItem key={proyecto._id} value={proyecto._id}>
+                      {proyecto.nombre}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {showEncargadoFilters && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="cliente-filter">Cliente</Label>
+                <Select
+                  value={filters.clienteId || 'all'}
+                  onValueChange={handleClienteChange}
+                >
+                  <SelectTrigger id="cliente-filter" className="w-full">
+                    <SelectValue placeholder="Todos los clientes" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los clientes</SelectItem>
+                    {clientes.map((cliente) => (
+                      <SelectItem key={cliente._id} value={cliente._id}>
+                        {cliente.firstName} {cliente.lastName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="proyecto-filter-encargado">Proyecto</Label>
+                <Select
+                  value={filters.proyectoId || 'all'}
+                  onValueChange={handleProjectChange}
+                >
+                  <SelectTrigger id="proyecto-filter-encargado" className="w-full">
+                    <SelectValue placeholder="Todos los proyectos" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los proyectos</SelectItem>
+                    {proyectos.map((proyecto) => (
+                      <SelectItem key={proyecto._id} value={proyecto._id}>
+                        {proyecto.nombre}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="tipo-reclamo-filter">Tipo de Reclamo</Label>
+                <Select
+                  value={filters.tipoReclamoId || 'all'}
+                  onValueChange={handleTipoReclamoChange}
+                >
+                  <SelectTrigger id="tipo-reclamo-filter" className="w-full">
+                    <SelectValue placeholder="Todos los tipos" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los tipos</SelectItem>
+                    {tipoReclamos.map((tipo) => (
+                      <SelectItem key={tipo._id} value={tipo._id}>
+                        {tipo.nombre}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="estado-filter">Estado</Label>
+                <Select
+                  value={filters.estado || 'all'}
+                  onValueChange={handleEstadoChange}
+                >
+                  <SelectTrigger id="estado-filter" className="w-full">
+                    <SelectValue placeholder="Todos los estados" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los estados</SelectItem>
+                    {Object.values(EstadoReclamo).map((estado) => (
+                      <SelectItem key={estado} value={estado}>
+                        {estado}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="area-filter">Área</Label>
+                <Select
+                  value={filters.areaId || 'all'}
+                  onValueChange={handleAreaChange}
+                >
+                  <SelectTrigger id="area-filter" className="w-full">
+                    <SelectValue placeholder="Todas las áreas" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas las áreas</SelectItem>
+                    {areas.map((area) => (
+                      <SelectItem key={area._id} value={area._id}>
+                        {area.nombre}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </>
+          )}
         </div>
       )}
       </CardContent>
