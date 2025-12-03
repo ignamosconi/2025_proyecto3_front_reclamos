@@ -5,21 +5,25 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAuthStore } from '@/stores/auth-store'
 import { ClienteDashboard } from './cliente-dashboard'
 import { EncargadoDashboard } from './encargado-dashboard'
+import { GerenteDashboard } from './gerente-dashboard'
 
 export function Dashboard() {
   const { auth } = useAuthStore()
   const isClient = auth.hasRole('Cliente')
   const isEncargado = auth.hasRole('Encargado')
+  const isGerente = auth.hasRole('Gerente')
 
   const getTitle = () => {
     if (isClient) return 'Dashboard de Reclamos'
     if (isEncargado) return 'Dashboard de Encargado'
+    if (isGerente) return 'Dashboard de Gerente'
     return 'Dashboard'
   }
 
   const getDescription = () => {
     if (isClient) return 'Visualiza y analiza el estado de tus reclamos y proyectos'
     if (isEncargado) return 'Monitorea tu desempeño y métricas de los reclamos que has resuelto'
+    if (isGerente) return 'Métricas estratégicas globales para supervisar el rendimiento y eficiencia del área'
     return 'Panel de control general del sistema'
   }
 
@@ -30,6 +34,10 @@ export function Dashboard() {
 
     if (isEncargado) {
       return <EncargadoDashboard />
+    }
+
+    if (isGerente) {
+      return <GerenteDashboard />
     }
 
     return (

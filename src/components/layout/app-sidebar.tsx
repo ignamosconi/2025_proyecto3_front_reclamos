@@ -34,9 +34,9 @@ export function AppSidebar() {
         if (item.title === 'Proyectos') {
           return hasRole('Cliente') || hasRole('Encargado') || hasRole('Gerente')
         }
-        // Si el item es "Dashboard", solo mostrarlo si el usuario es "Dueño"
+        // Si el item es "Dashboard", mostrarlo para Cliente, Encargado y Gerente
         if (item.title === 'Dashboard') {
-          return hasRole('Dueño')
+          return hasRole('Cliente') || hasRole('Encargado') || hasRole('Gerente')
         }
         // Para otros items, mostrarlos siempre
         return true
